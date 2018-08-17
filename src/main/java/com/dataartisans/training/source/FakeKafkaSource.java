@@ -36,8 +36,8 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
 
     private static final List<String> LOCATIONS = Lists.newArrayList("waldstadion", "boellenfalltor", "olympiastadion");
 
-    public static final int NO_OF_PARTIONS        = 20;
-    public static final int SLOW_SUBTASK_DELAY_MS = 10;
+    public static final int           NO_OF_PARTIONS  = 16;
+    public static final List<Integer> IDLE_PARTITIONS = Lists.newArrayList(0, 8);
 
     private static final int MAX_TIME_BETWEEN_EVENTS_MS = 1;
 
@@ -67,19 +67,26 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
                                       .boxed()
                                       .collect(Collectors.toList());
 
+
         log.info("{}({}/{}) reads from partitions: {}", this.getClass(), indexOfThisSubtask, numberOfParallelSubtasks, assignedPartitions);
     }
 
     @Override
     public void run(final SourceContext<FakeKafkaRecord> sourceContext) throws Exception {
 
-        //TODO: Create Skew in some keys.
+        //TODO: create skew in some keys.
+        //TODO: introduce poison pills
 
         int numberOfPartitions = assignedPartitions.size();
 
         while (!cancelled) {
-
             int nextPartition = assignedPartitions.get(rand.nextInt(numberOfPartitions));
+
+            if (IDLE_PARTITIONS.contains(nextPartition)) {
+                Thread.sleep(1000); // avoid spinning wait
+                continue;
+            }
+
             long nextTimestamp =
                     lastTimestampPerPartition.getOrDefault(nextPartition, nextPartition * 100L) +
                     rand.nextInt(MAX_TIME_BETWEEN_EVENTS_MS + 1);
@@ -108,7 +115,7 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     public void snapshotState(final FunctionSnapshotContext context) throws Exception {
         perPartitionTimestampState.clear();
         for (final Integer partition : assignedPartitions) {
-            perPartitionTimestampState.add(new Tuple2<>(partition, lastTimestampPerPartition.get(partition)));
+            perPartitionTimestampState.add(new Tuple2<>(partition, lastTimestampPerPartition.getOrDefault(partition, 0L)));
         }
     }
 
