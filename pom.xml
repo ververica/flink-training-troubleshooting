@@ -103,6 +103,33 @@ under the License.
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <id>Upload Artifact to Minio</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bin/upload_artifact.sh</executable>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <phase>install</phase>
+                        <id>Create dA Plataform Deployment</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bin/create_deployment.sh</executable>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- We use the maven-shade plugin to create a fat jar that contains all necessary dependencies. -->
             <!-- Change the value of <mainClass>...</mainClass> if your program entry point changes. -->
             <plugin>

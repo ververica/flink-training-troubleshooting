@@ -15,7 +15,7 @@ spec:
     spec:
       artifact:
         kind: JAR
-        jarUri: http://minio/troubleshooting/flink-cookbook-0.1.jar
+        jarUri: http://minio/troubleshooting/flink-training-troubleshooting-0.1.jar
         flinkVersion: 1.5
         flinkImageRegistry: registry.platform.data-artisans.net
         flinkImageRepository: demo/v1.1/flink
