@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-echo "Updating Deplyoment now"
+echo "This will create the deployment at $1"

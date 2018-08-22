@@ -36,6 +36,7 @@ under the License.
         <scala.binary.version>2.11</scala.binary.version>
         <guava.version>23.0</guava.version>
         <log4j.version>2.10.0</log4j.version>
+        <daplatform.ip>CHANGE_ME</daplatform.ip>
     </properties>
 
     <dependencies>
@@ -134,6 +135,9 @@ under the License.
                         </goals>
                         <configuration>
                             <executable>bin/upload_artifact.sh</executable>
+                            <arguments>
+                                <argument>${flink.version}</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                     <execution>
@@ -144,6 +148,9 @@ under the License.
                         </goals>
                         <configuration>
                             <executable>bin/create_deployment.sh</executable>
+                            <arguments>
+                                <argument>${flink.version}</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>
