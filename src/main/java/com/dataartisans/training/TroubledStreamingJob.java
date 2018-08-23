@@ -4,12 +4,12 @@ import com.dataartisans.training.entities.WindowedMeasurements;
 import com.dataartisans.training.source.FakeKafkaSource;
 import com.dataartisans.training.udfs.*;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.flink.configuration.Configuration;
+import org.apache.flink.api.common.restartstrategy.RestartStrategies;
+import org.apache.flink.api.common.time.Time;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.DiscardingSink;
-import org.apache.flink.streaming.api.windowing.time.Time;
 
 import java.util.concurrent.TimeUnit;
 
@@ -17,18 +17,22 @@ public class TroubledStreamingJob {
 
     public static void main(String[] args) throws Exception {
 
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(new Configuration());
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
+        env.getConfig().setLatencyTrackingInterval(100);
+
+        //Time Characteristics
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         env.getConfig().setAutoWatermarkInterval(500);
 
-        env.getConfig().setLatencyTrackingInterval(100);
+        //Checkpointing Configuration
         env.enableCheckpointing(1000);
+        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(500);
 
-        //TODO Restart Strategy
+        //Restart Strategy (always restart)
+        env.setRestartStrategy(RestartStrategies.failureRateRestart(10, Time.of(10, TimeUnit.SECONDS), Time
+                .of(1, TimeUnit.SECONDS)));
 
-
-        //TODO Classloading issue? Maybe we will not do this.
 
         DataStream<JsonNode> sourceStream = env.addSource(new FakeKafkaSource(1))
                                                .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
@@ -44,11 +48,12 @@ public class TroubledStreamingJob {
 
         DataStream<WindowedMeasurements> avgValuePerLocation = filteredStream.keyBy(jsonNode -> jsonNode.get("location")
                                                                                                         .asText()) //Possibly reinterpretAsKeyedStream
-                                                                             .timeWindow(Time.of(10, TimeUnit.SECONDS))
+                                                                             .timeWindow(org.apache.flink.streaming.api.windowing.time.Time.of(30, TimeUnit.SECONDS))
                                                                              .aggregate(new MeasurementAggregationFunction(), new MeasurementWindowFunction()); //never triggered because of idle partitions
 
-        //TODO Maybe replace by StreamingFileSink
-        avgValuePerLocation.addSink(new DiscardingSink<>());
+
+        avgValuePerLocation.addSink(new DiscardingSink<>()); //use for performance testing in dA Platform
+//        avgValuePerLocation.print(); //use for local testing
 
         env.execute();
     }
