@@ -8,7 +8,7 @@ There are two ways to run this job: locally in your IDE and on dA Platform.
 
 **Locally** 
 
-Just run the main-method of `TroubledStreamingJob`. To have access to the Flink UI, replace the existing `ExecutionEnvironment` by `StreamExecutionEnvironment.createLocalEnvironmentWithWebUi(new Configuration())`
+Just run the main-method of `TroubledStreamingJob`. To have access to the Flink UI, replace the existing `ExecutionEnvironment` by `StreamExecutionEnvironment.createLocalEnvironmentWithWebUi(new Configuration())`. You might also want use `DataStream:print()` instead of the `DiscardingSink` for local debugging.
 
 **dA Platform** 
 

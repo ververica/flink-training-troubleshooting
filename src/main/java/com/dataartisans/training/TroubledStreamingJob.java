@@ -34,7 +34,7 @@ public class TroubledStreamingJob {
                 .of(1, TimeUnit.SECONDS)));
 
 
-        DataStream<JsonNode> sourceStream = env.addSource(new FakeKafkaSource(1))
+        DataStream<JsonNode> sourceStream = env.addSource(new FakeKafkaSource(1, 0.0001f))
                                                .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
                                                .map(new MeasurementDeserializer());  //ineffecient data type, per-record creation of ObjectMapper, uncaught exception on invalid input
 

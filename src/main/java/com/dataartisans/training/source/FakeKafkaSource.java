@@ -21,10 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -39,9 +36,9 @@ import java.util.stream.IntStream;
 public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord> implements CheckpointedFunction {
 
 
-    public static final int           NO_OF_PARTIONS  = 16;
-    //    public static final List<Integer> IDLE_PARTITIONS = Lists.newArrayList(0, 8);
-    public static final List<Integer> IDLE_PARTITIONS = Lists.newArrayList();
+    public static final int           NO_OF_PARTIONS  = 8;
+    public static final List<Integer> IDLE_PARTITIONS = Lists.newArrayList(0, 4);
+//    public static final List<Integer> IDLE_PARTITIONS = Lists.newArrayList();
 
     private static final int MAX_TIME_BETWEEN_EVENTS_MS = 1;
 
@@ -56,9 +53,11 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     private transient          int                              indexOfThisSubtask;
     private transient          int                              numberOfParallelSubtasks;
     private transient          List<Integer>                    assignedPartitions;
+    private                    double                           poisonPillRate;
 
-    public FakeKafkaSource(final int seed) {
+    public FakeKafkaSource(final int seed, final float poisonPillRate) {
         this.rand = new Random(seed);
+        this.poisonPillRate = poisonPillRate;
         mapper = new ObjectMapper();
     }
 
@@ -82,7 +81,6 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     public void run(final SourceContext<FakeKafkaRecord> sourceContext) throws Exception {
 
         //TODO: create skew in some keys.
-        //TODO: introduce poison pills
 
         int numberOfPartitions = assignedPartitions.size();
 
@@ -102,6 +100,10 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
             Measurement nextMeasurement = new Measurement(rand.nextInt(100),
                     rand.nextDouble() * 100, locations.get(rand.nextInt(locations.size())));
             byte[] serializedMeasurement = mapper.writeValueAsBytes(nextMeasurement);
+
+            if (rand.nextFloat() > 1 - poisonPillRate) {
+                serializedMeasurement = Arrays.copyOf(serializedMeasurement, 10);
+            }
 
             synchronized (sourceContext.getCheckpointLock()) {
                 sourceContext.collect(new FakeKafkaRecord(nextTimestamp, null, serializedMeasurement,
