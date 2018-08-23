@@ -1,7 +1,6 @@
 package com.dataartisans.training.source;
 
 import com.dataartisans.training.entities.FakeKafkaRecord;
-import com.dataartisans.training.entities.Measurement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -13,14 +12,12 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
-import org.apache.flink.shaded.guava18.com.google.common.collect.Lists;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
-import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -43,7 +40,7 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     private final ObjectMapper mapper;
 
 
-    private transient          List<String>                     locations;
+    private transient          List<byte[]>                     serializedMeasurements;
     private transient volatile boolean                          cancelled;
     private transient          HashMap<Integer, Long>           lastTimestampPerPartition;
     private transient          ListState<Tuple2<Integer, Long>> perPartitionTimestampState;
@@ -70,7 +67,7 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
                                       .boxed()
                                       .collect(Collectors.toList());
 
-        this.locations = importLocations();
+        this.serializedMeasurements = importMeasurements();
 
         log.info("Now reading from partitions: {}", assignedPartitions);
     }
@@ -96,9 +93,7 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
                     rand.nextInt(MAX_TIME_BETWEEN_EVENTS_MS + 1);
 
             //TODO: Get rid of costly serialization
-            Measurement nextMeasurement = new Measurement(rand.nextInt(100),
-                    rand.nextDouble() * 100, locations.get(rand.nextInt(locations.size())));
-            byte[] serializedMeasurement = mapper.writeValueAsBytes(nextMeasurement);
+            byte[] serializedMeasurement = serializedMeasurements.get(rand.nextInt(serializedMeasurements.size()));
 
             if (rand.nextFloat() > 1 - poisonPillRate) {
                 serializedMeasurement = Arrays.copyOf(serializedMeasurement, 10);
@@ -144,16 +139,11 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
         }
     }
 
-    private List<String> importLocations() throws IOException {
-        List<String> locations = Lists.newArrayList();
-        try (InputStream is = getClass().getResourceAsStream("/cities.csv");
-             BufferedReader br = new BufferedReader(new InputStreamReader(is));) {
-            String city;
-            while ((city = br.readLine()) != null) {
-                locations.add(city);
-            }
-            log.info("{} locations imported.", locations.size());
+    private List<byte[]> importMeasurements() throws IOException, ClassNotFoundException {
+        try (FileInputStream fileIn = new FileInputStream(DataGenerator.MEASUREMENTS_PATH);
+             ObjectInputStream in = new ObjectInputStream(fileIn)) {
+            return (List<byte[]>) in.readObject();
         }
-        return locations;
+
     }
 }
