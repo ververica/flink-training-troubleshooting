@@ -36,18 +36,18 @@ public class TroubledStreamingJob {
 
         DataStream<JsonNode> sourceStream = env.addSource(new FakeKafkaSource(1, 0.0001f))
                                                .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
-                                               .map(new MeasurementDeserializer());  //ineffecient data type, per-record creation of ObjectMapper, uncaught exception on invalid input
+                                               .map(new MeasurementDeserializer());
 
         DataStream<JsonNode> enrichedStream = sourceStream.keyBy(jsonNode -> jsonNode.get("location")
-                                                                                     .asText()) // key by location for caching of external IO in EnrichMeasurement
-                                                          .map(new EnrichMeasurementByTemperature());
+                                                                                     .asText())
+                                                          .map(new EnrichMeasurementByTemperature(1000));
 
 
-        DataStream<JsonNode> filteredStream = enrichedStream.filter(jsonNode -> jsonNode.has("temperature")) //Unneccessarily late filter -> make EnrichMeasurement a FlatMap
-                                                            .map(new MeasurementProjection("temperature", "location", "value")); //Unneccessarily late projection
+        DataStream<JsonNode> filteredStream = enrichedStream.filter(jsonNode -> jsonNode.has("temperature"))
+                                                            .map(new MeasurementProjection("temperature", "location", "value"));
 
         DataStream<WindowedMeasurements> avgValuePerLocation = filteredStream.keyBy(jsonNode -> jsonNode.get("location")
-                                                                                                        .asText()) //Possibly reinterpretAsKeyedStream
+                                                                                                        .asText())
                                                                              .timeWindow(org.apache.flink.streaming.api.windowing.time.Time.of(30, TimeUnit.SECONDS))
                                                                              .aggregate(new MeasurementAggregationFunction(), new MeasurementWindowFunction()); //never triggered because of idle partitions
 

@@ -2,7 +2,6 @@ package com.dataartisans.training.io;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -18,26 +17,26 @@ public class TemperatureClient {
     private static final float  TEMPERATURE_LIMIT = 100;
     private              Random rand              = new Random(42);
 
-    public Optional<Float> getTemperatureFor(String location) throws Exception {
+    public Float getTemperatureFor(String location) throws Exception {
         return new TemperatureSupplier().get();
     }
 
-    public void asyncGetTemperatureFor(String location, Consumer<Optional<Float>> callback) {
+    public void asyncGetTemperatureFor(String location, Consumer<Float> callback) {
 
         CompletableFuture.supplyAsync(new TemperatureSupplier(), pool)
                          .thenAcceptAsync(callback, org.apache.flink.runtime.concurrent.Executors.directExecutor());
     }
 
-    private class TemperatureSupplier implements Supplier<Optional<Float>> {
+    private class TemperatureSupplier implements Supplier<Float> {
         //TODO return Optional.empty() for some keys
         @Override
-        public Optional<Float> get() {
+        public Float get() {
             try {
                 Thread.sleep(rand.nextInt(10));
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                //Swallowing Interruption here
             }
-            return Optional.of(rand.nextFloat() * TEMPERATURE_LIMIT);
+            return rand.nextFloat() * TEMPERATURE_LIMIT;
         }
     }
 }
