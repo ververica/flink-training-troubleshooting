@@ -36,10 +36,7 @@ import java.util.stream.IntStream;
 public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord> implements CheckpointedFunction {
 
 
-    public static final int           NO_OF_PARTIONS  = 8;
-    public static final List<Integer> IDLE_PARTITIONS = Lists.newArrayList(0, 4);
-//    public static final List<Integer> IDLE_PARTITIONS = Lists.newArrayList();
-
+    public static final  int NO_OF_PARTIONS             = 8;
     private static final int MAX_TIME_BETWEEN_EVENTS_MS = 1;
 
     private final Random       rand;
@@ -54,10 +51,12 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     private transient          int                              numberOfParallelSubtasks;
     private transient          List<Integer>                    assignedPartitions;
     private                    double                           poisonPillRate;
+    private                    List<Integer>                    idlePartitions;
 
-    public FakeKafkaSource(final int seed, final float poisonPillRate) {
+    public FakeKafkaSource(final int seed, final float poisonPillRate, List<Integer> idlePartitions) {
         this.rand = new Random(seed);
         this.poisonPillRate = poisonPillRate;
+        this.idlePartitions = idlePartitions;
         mapper = new ObjectMapper();
     }
 
@@ -73,7 +72,7 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
 
         this.locations = importLocations();
 
-        log.info("Now reading from partitions: {}", this.getClass(), indexOfThisSubtask, numberOfParallelSubtasks, assignedPartitions);
+        log.info("Now reading from partitions: {}", assignedPartitions);
     }
 
 
@@ -87,7 +86,7 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
         while (!cancelled) {
             int nextPartition = assignedPartitions.get(rand.nextInt(numberOfPartitions));
 
-            if (IDLE_PARTITIONS.contains(nextPartition)) {
+            if (idlePartitions.contains(nextPartition)) {
                 Thread.sleep(1000); // avoid spinning wait
                 continue;
             }

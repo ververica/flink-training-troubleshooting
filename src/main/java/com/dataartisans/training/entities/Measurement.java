@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Measurement {
 
-    //TODO add much more fields :)
-
     private int    sensorId;
     private double value;
     private String location;

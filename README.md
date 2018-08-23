@@ -23,26 +23,30 @@ Application Manager already contains a deployment for this `TroubleStreamingJob`
 
 * Flink UI
 * Logs (Kibana)
-* Metrics Dashboard
+* Metrics Dashboard (admin/admin)
 
 ## The Flink Job
 
-TODO
+This simple Flink job reads measurement data from a Kafka topic with eight partitions. For the purpose of this training the `KafkaConsumer` is replaced by `FakeKafkaSource`. This measurements are enriched with the current temperature based on `location` of the measurement. Afterwards the temperature is averaged over 30 seconds. The overall flow is depicted below:
 
-## Exercises
+Source -> Watermarks/Timestamps -> Deserialization -> Enrichment -> Filter/Projection -> Windowed Aggregation -> Sink  
 
-### Getting Started
+The Enrichment uses a `TemperatureClient`, which for the purpose of this training simulates requests to an API via the network. 
+
+# Exercises
+
+## Getting Started
 
 1. Run `TroubleStreamingJob` locally and check out the Flink UI.
 2. Run `mvn install` and start the Deployment `DAP_ADDRESS`:30000. Once it has reached the "RUNNING" state, find and checkout out the Flink UI, metrics dashboard and logs.
 
-### Correctness & Robustness Issues
+## Correctness & Robustness Issues
 
 1. In "Getting Started" you probably have noticed that your job is frequently restarting in the IDE as well as on dA Platform. Fix this issue and redeploy to dA Platform.
 
 2. Now the job is running stable, but there is no output. Investigate the issue and fix it. The Flink UI might help with this. (Did you now you can start the Flink UI locall with `))
 
-### Performance Issues
+## Performance Issues
 
 1. Identify which task or operator currently is the bottleneck by using the the backpressure monitor of the Flink UI. How could this operator be improved?
 

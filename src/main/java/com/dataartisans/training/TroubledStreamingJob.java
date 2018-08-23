@@ -6,6 +6,7 @@ import com.dataartisans.training.udfs.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.common.time.Time;
+import org.apache.flink.shaded.guava18.com.google.common.collect.Lists;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -26,7 +27,7 @@ public class TroubledStreamingJob {
         env.getConfig().setAutoWatermarkInterval(500);
 
         //Checkpointing Configuration
-        env.enableCheckpointing(1000);
+        //env.enableCheckpointing(1000);
         env.getCheckpointConfig().setMinPauseBetweenCheckpoints(500);
 
         //Restart Strategy (always restart)
@@ -34,7 +35,7 @@ public class TroubledStreamingJob {
                 .of(1, TimeUnit.SECONDS)));
 
 
-        DataStream<JsonNode> sourceStream = env.addSource(new FakeKafkaSource(1, 0.0001f))
+        DataStream<JsonNode> sourceStream = env.addSource(new FakeKafkaSource(1, 0.0001f, Lists.newArrayList(0, 4)))
                                                .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
                                                .map(new MeasurementDeserializer());
 
@@ -48,7 +49,7 @@ public class TroubledStreamingJob {
 
         DataStream<WindowedMeasurements> avgValuePerLocation = filteredStream.keyBy(jsonNode -> jsonNode.get("location")
                                                                                                         .asText())
-                                                                             .timeWindow(org.apache.flink.streaming.api.windowing.time.Time.of(30, TimeUnit.SECONDS))
+                                                                             .timeWindow(org.apache.flink.streaming.api.windowing.time.Time.of(1, TimeUnit.SECONDS))
                                                                              .aggregate(new MeasurementAggregationFunction(), new MeasurementWindowFunction()); //never triggered because of idle partitions
 
 

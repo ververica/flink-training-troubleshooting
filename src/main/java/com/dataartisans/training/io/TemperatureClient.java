@@ -32,7 +32,7 @@ public class TemperatureClient {
         @Override
         public Float get() {
             try {
-                Thread.sleep(rand.nextInt(10));
+                Thread.sleep(rand.nextInt(5));
             } catch (InterruptedException e) {
                 //Swallowing Interruption here
             }
