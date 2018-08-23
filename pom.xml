@@ -28,7 +28,7 @@ under the License.
 
     <name>Flink Training Troubleshooting</name>
     <url>http://www.data-artisans.com</url>
-    
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <flink.version>1.5.2</flink.version>
