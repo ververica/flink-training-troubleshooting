@@ -27,8 +27,8 @@ public class TroubledStreamingJob {
         env.getConfig().setAutoWatermarkInterval(500);
 
         //Checkpointing Configuration
-        //env.enableCheckpointing(1000);
-        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(500);
+        env.enableCheckpointing(5000);
+        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(4000);
 
         //Restart Strategy (always restart)
         env.setRestartStrategy(RestartStrategies.failureRateRestart(10, Time.of(10, TimeUnit.SECONDS), Time
@@ -41,7 +41,7 @@ public class TroubledStreamingJob {
 
         DataStream<JsonNode> enrichedStream = sourceStream.keyBy(jsonNode -> jsonNode.get("location")
                                                                                      .asText())
-                                                          .map(new EnrichMeasurementByTemperature(1000));
+                                                          .map(new EnrichMeasurementByTemperature(10000));
 
 
         DataStream<JsonNode> filteredStream = enrichedStream.filter(jsonNode -> jsonNode.has("temperature"))
