@@ -62,7 +62,7 @@ public class EnrichMeasurementByTemperature extends RichMapFunction<JsonNode, Js
         private float value;
 
         public boolean isTooOld(int expiryMs) {
-            return System.currentTimeMillis() - timestamp > expiryMs;
+            return System.currentTimeMillis() - timestamp >= expiryMs;
         }
     }
 }
