@@ -7,6 +7,7 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.runtime.state.StateBackend;
 import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.streaming.api.TimeCharacteristic;
+import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -17,7 +18,7 @@ import org.apache.flink.util.OutputTag;
 
 import com.dataartisans.training.entities.WindowedMeasurements;
 import com.dataartisans.training.source.SourceUtils;
-import com.dataartisans.training.udfs.EnrichMeasurementWithTemperature;
+import com.dataartisans.training.udfs.EnrichMeasurementWithTemperatureAsync;
 import com.dataartisans.training.udfs.MeasurementDeserializer;
 import com.dataartisans.training.udfs.MeasurementTSExtractor;
 import com.dataartisans.training.udfs.MeasurementWindowAggregatingFunction;
@@ -74,13 +75,13 @@ public class TroubledStreamingJob {
                 .assignTimestampsAndWatermarks(new MeasurementTSExtractor(Time.of(250, TimeUnit.MILLISECONDS), Time.of(100, TimeUnit.MILLISECONDS)))
                 .flatMap(new MeasurementDeserializer()).name("Deserialization");
 
-        DataStream<JsonNode> enrichedStream = sourceStream
-                .keyBy(jsonNode -> jsonNode.get("location").asText())
-                .map(new EnrichMeasurementWithTemperature(10000)).name("Enrichment");
-
         OutputTag<JsonNode> lateDataTag = new OutputTag<JsonNode>("late-data") {
             private static final long serialVersionUID = 33513631677208956L;
         };
+
+        DataStream<JsonNode> enrichedStream = AsyncDataStream.unorderedWait(sourceStream.keyBy(jsonNode -> jsonNode.get("location")
+                .asText()), new EnrichMeasurementWithTemperatureAsync(10000), 0, TimeUnit.MILLISECONDS, 20);
+
 
         SingleOutputStreamOperator<WindowedMeasurements> aggregatedPerLocation = enrichedStream
                 .keyBy(jsonNode -> jsonNode.get("location").asText())
