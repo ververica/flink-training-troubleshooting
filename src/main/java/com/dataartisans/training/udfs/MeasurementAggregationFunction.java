@@ -13,6 +13,7 @@ public class MeasurementAggregationFunction implements AggregateFunction<JsonNod
     @Override
     public WindowedMeasurements add(final JsonNode value, final WindowedMeasurements accumulator) {
         accumulator.setSumPerWindow(accumulator.getSumPerWindow() + Double.valueOf(value.get("value").asText()));
+        accumulator.setEventsPerWindow(accumulator.getEventsPerWindow() + 1);
         return accumulator;
     }
 
