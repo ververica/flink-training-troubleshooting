@@ -1,7 +1,6 @@
 package com.dataartisans.training.source;
 
 import com.dataartisans.training.entities.FakeKafkaRecord;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.state.ListState;
@@ -15,9 +14,6 @@ import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -36,25 +32,25 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     public static final  int NO_OF_PARTIONS             = 8;
     private static final int MAX_TIME_BETWEEN_EVENTS_MS = 1;
 
-    private final Random       rand;
-    private final ObjectMapper mapper;
+    private final Random rand;
 
-
-    private transient          List<byte[]>                     serializedMeasurements;
     private transient volatile boolean                          cancelled;
     private transient          HashMap<Integer, Long>           lastTimestampPerPartition;
     private transient          ListState<Tuple2<Integer, Long>> perPartitionTimestampState;
     private transient          int                              indexOfThisSubtask;
     private transient          int                              numberOfParallelSubtasks;
     private transient          List<Integer>                    assignedPartitions;
-    private                    double                           poisonPillRate;
-    private                    List<Integer>                    idlePartitions;
 
-    public FakeKafkaSource(final int seed, final float poisonPillRate, List<Integer> idlePartitions) {
-        this.rand = new Random(seed);
+    private List<byte[]>  serializedMeasurements;
+    private double        poisonPillRate;
+    private List<Integer> idlePartitions;
+
+    FakeKafkaSource(final int seed, final float poisonPillRate, List<Integer> idlePartitions, List<byte[]> serializedMeasurements) {
         this.poisonPillRate = poisonPillRate;
         this.idlePartitions = idlePartitions;
-        mapper = new ObjectMapper();
+        this.serializedMeasurements = serializedMeasurements;
+
+        this.rand = new Random(seed);
     }
 
     @Override
@@ -67,16 +63,12 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
                                       .boxed()
                                       .collect(Collectors.toList());
 
-        this.serializedMeasurements = importMeasurements();
-
         log.info("Now reading from partitions: {}", assignedPartitions);
     }
 
 
     @Override
     public void run(final SourceContext<FakeKafkaRecord> sourceContext) throws Exception {
-
-        //TODO: create skew in some keys.
 
         int numberOfPartitions = assignedPartitions.size();
 
@@ -92,7 +84,6 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
                     lastTimestampPerPartition.getOrDefault(nextPartition, nextPartition * 100L) +
                     rand.nextInt(MAX_TIME_BETWEEN_EVENTS_MS + 1);
 
-            //TODO: Get rid of costly serialization
             byte[] serializedMeasurement = serializedMeasurements.get(rand.nextInt(serializedMeasurements.size()));
 
             if (rand.nextFloat() > 1 - poisonPillRate) {
@@ -137,13 +128,5 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
             Tuple2<Integer, Long> next = partitionTimestampIterator.next();
             lastTimestampPerPartition.put(next.f0, next.f1);
         }
-    }
-
-    private List<byte[]> importMeasurements() throws IOException, ClassNotFoundException {
-        try (FileInputStream fileIn = new FileInputStream(DataGenerator.MEASUREMENTS_PATH);
-             ObjectInputStream in = new ObjectInputStream(fileIn)) {
-            return (List<byte[]>) in.readObject();
-        }
-
     }
 }
