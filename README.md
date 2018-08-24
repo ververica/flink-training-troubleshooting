@@ -15,7 +15,7 @@ Just run the main-method of `TroubledStreamingJob`. To have access to the Flink 
 Each participant has access to a personal dA Platform instance (running on a single-node Kubernetes cluster) for the duration of the training. You should have received your IP address `DAP_ADDRESS` offline.
 
 * Application Manager is accessible via `DAP_ADDRESS`:30000. 
-* Minio (an S3-compatible FS) is accessible via `DAP_ADDRESS`:30001
+* Minio (an S3-compatible FS) is accessible via `DAP_ADDRESS`:30001 (username: admin, password: password)
 
 `mvn install` will be automatically upload your artifact and change your dA Platform Deployment specification to point to the new artifact. For this you need to change the line `<daplatform.ip>CHANGE_ME</daplatform.ip>` in `pom.xml` to point to your personal dA Platform instance's IP addresss. The dA Platform UI can be accessed via your dA Platform instances IP on port 3000. Minio (an S3 mock we use for artifact storage as well as savepoints/checkpoints during the training) can be accessed on port 30001. 
 
@@ -44,6 +44,8 @@ The Enrichment uses a `TemperatureClient`, which  - for the purpose of this trai
 ## Correctness & Robustness Issues
 
 1. In "Getting Started" you probably have noticed that your job is frequently restarting in the IDE as well as on dA Platform. Fix this issue and redeploy to dA Platform.
+
+Remark: If you upload a new version of the jar via `mvn install` you need to "Cancel" or "Suspend" the Deployment and then "Start" it again for the changes to take effect.
 
 2. Now the job is running stable, but there is no output. Investigate the issue and fix it. The Flink UI might help with this.
 
