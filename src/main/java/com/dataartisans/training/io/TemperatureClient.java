@@ -28,7 +28,6 @@ public class TemperatureClient {
     }
 
     private class TemperatureSupplier implements Supplier<Float> {
-        //TODO return Optional.empty() for some keys
         @Override
         public Float get() {
             try {

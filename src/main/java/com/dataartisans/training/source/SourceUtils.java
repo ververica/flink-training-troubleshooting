@@ -33,8 +33,6 @@ public class SourceUtils {
 
         final List<String> locations = readLocationsFromFile();
 
-        //TODO: create skew in some keys.
-
         List<byte[]> measurements = Lists.newArrayList();
         for (int i = 0; i < NUM_OF_MEASUREMENTS; i++) {
             Measurement nextMeasurement = new Measurement(rand.nextInt(100),
