@@ -45,7 +45,7 @@ The enrichment uses a `TemperatureClient`, which - for the purpose of this train
 
 ## Getting Started
 
-1. Run `TroubleStreamingJob` locally and check out the Flink UI.
+1. Run `TroubledStreamingJob` locally and check out the Flink UI.
 2. Run `mvn install` and start the deployment via dA Application Manager on `DAP_ADDRESS`:30000. Once it has reached the "RUNNING" state, find and check out out the Flink UI, metrics dashboard and logs. In particular, you should familarize yourself with the metrics.
 
 ## Correctness & Robustness Issues
@@ -60,6 +60,8 @@ Remark: If you upload a new version of the jar via `mvn install` you need to "Ca
 
 1. Identify which task or operator currently is the bottleneck by using the backpressure monitor of the Flink UI. How could this operator be improved?
 
-For the following exercises it is important to keep the `cacheExpiryMs` parameter stable. You can leave the parameter at the default value from the previous exercise. The improvements in the following exercises will be most visible, if we set `cacheExpiryMs` to `Integer.MAX_VALUE`, which basically circumvents any "external IO" after a short warm-up phase.
+For the following exercises it is important to keep the `cacheExpiryMs` parameter stable. You can just leave the parameter at the default value from the previous exercise. When profiling your Flink job with VisualVM or similar the bottlenecks will be most visible, if you set `cacheExpiryMs` to `Integer.MAX_VALUE`, which basically circumvents any "external IO" after a short warm-up phase.
 
-2. 
+2. Improve the throughput of `TroubledStreamingJob` by making serialization more efficient. You can expect an improvement of a factor of 1.5 - 2. Hint for inefficient serialization can be found in the logs of the Flink Job.
+
+3. Improve the throughput of `TroubledStreamingJob` further by identifying and inefficient user code. The backpressure monitor as well as a profiler like VisualVM can help you to identify suspicious operators.
