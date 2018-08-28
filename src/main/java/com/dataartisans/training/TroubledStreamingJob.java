@@ -18,9 +18,7 @@ public class TroubledStreamingJob {
     public static void main(String[] args) throws Exception {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
-        env.getConfig().setLatencyTrackingInterval(100);
-
+        
         //Time Characteristics
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         env.getConfig().setAutoWatermarkInterval(500);
@@ -42,15 +40,10 @@ public class TroubledStreamingJob {
                                                                                      .asText())
                                                           .map(new EnrichMeasurementByTemperature(10000));
 
-
-        DataStream<JsonNode> filteredStream = enrichedStream.filter(jsonNode -> jsonNode.has("temperature"))
-                                                            .map(new MeasurementProjection("temperature", "location", "value"));
-
-        DataStream<WindowedMeasurements> avgValuePerLocation = filteredStream.keyBy(jsonNode -> jsonNode.get("location")
+        DataStream<WindowedMeasurements> avgValuePerLocation = enrichedStream.keyBy(jsonNode -> jsonNode.get("location")
                                                                                                         .asText())
                                                                              .timeWindow(org.apache.flink.streaming.api.windowing.time.Time.of(1, TimeUnit.SECONDS))
-                                                                             .aggregate(new MeasurementAggregationFunction(), new MeasurementWindowFunction()); //never triggered because of idle partitions
-
+                                                                             .aggregate(new MeasurementAggregationFunction(), new MeasurementWindowFunction());
 
         avgValuePerLocation.addSink(new DiscardingSink<>()); //use for performance testing in dA Platform
 //        avgValuePerLocation.print(); //use for local testing
