@@ -8,7 +8,8 @@ import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
 import com.dataartisans.training.entities.FakeKafkaRecord;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -23,23 +24,23 @@ import java.util.stream.IntStream;
  * The timestamps roughly start at the epoch and are ascending per partition. The partitions themselves can be out of sync.
  * *
  */
-@Slf4j
 public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord> implements CheckpointedFunction {
     private static final long serialVersionUID = 4658785571367840693L;
 
-    private static final int NO_OF_PARTIONS = 8;
+    private static final int    NO_OF_PARTIONS = 8;
+    public static final  Logger log            = LoggerFactory.getLogger(FakeKafkaSource.class);
 
     private final Random rand;
 
-    private transient volatile boolean                          cancelled;
-    private transient          int                              indexOfThisSubtask;
-    private transient          int                              numberOfParallelSubtasks;
-    private transient          List<Integer>                    assignedPartitions;
-    private transient          boolean                          throttled;
+    private transient volatile boolean       cancelled;
+    private transient          int           indexOfThisSubtask;
+    private transient          int           numberOfParallelSubtasks;
+    private transient          List<Integer> assignedPartitions;
+    private transient          boolean       throttled;
 
-    private final List<byte[]>  serializedMeasurements;
-    private final double        poisonPillRate;
-    private final BitSet        idlePartitions;
+    private final List<byte[]> serializedMeasurements;
+    private final double       poisonPillRate;
+    private final BitSet       idlePartitions;
 
     FakeKafkaSource(final int seed, final float poisonPillRate, List<Integer> idlePartitions, List<byte[]> serializedMeasurements) {
         this.poisonPillRate = poisonPillRate;
@@ -58,9 +59,9 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
         numberOfParallelSubtasks = getRuntimeContext().getNumberOfParallelSubtasks();
 
         assignedPartitions = IntStream.range(0, NO_OF_PARTIONS)
-                                      .filter(i -> i % numberOfParallelSubtasks == indexOfThisSubtask)
-                                      .boxed()
-                                      .collect(Collectors.toList());
+                .filter(i -> i % numberOfParallelSubtasks == indexOfThisSubtask)
+                .boxed()
+                .collect(Collectors.toList());
 
         ParameterTool jobParameters =
                 (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();

@@ -9,15 +9,16 @@ import org.apache.flink.util.Collector;
 
 import com.dataartisans.training.entities.WindowedMeasurements;
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.util.CombinatoricsUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class MeasurementWindowAggregatingFunction
         extends ProcessWindowFunction<JsonNode, WindowedMeasurements, String, TimeWindow> {
     private static final long serialVersionUID = -1083906142198231377L;
 
-    private static final int EVENT_TIME_LAG_WINDOW_SIZE = 250_000;
+    public static final  Logger log                        = LoggerFactory.getLogger(MeasurementWindowAggregatingFunction.class);
+    private static final int    EVENT_TIME_LAG_WINDOW_SIZE = 250_000;
 
     private transient DescriptiveStatisticsHistogram eventTimeLag;
 
