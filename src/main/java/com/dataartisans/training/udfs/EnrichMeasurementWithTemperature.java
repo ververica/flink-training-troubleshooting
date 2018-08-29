@@ -1,35 +1,36 @@
 package com.dataartisans.training.udfs;
 
-import com.dataartisans.training.io.TemperatureClient;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Maps;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.metrics.Counter;
 
+import com.dataartisans.training.io.TemperatureClient;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.HashMap;
 import java.util.Map;
 
-public class EnrichMeasurementByTemperature extends RichMapFunction<JsonNode, JsonNode> {
+public class EnrichMeasurementWithTemperature extends RichMapFunction<JsonNode, JsonNode> {
 
     private transient TemperatureClient                  temperatureClient;
     private transient Map<String, TemperatureCacheEntry> cache;
 
-    private int     cacheExpiryMs;
-    private Counter cacheSizeMetric;
-    private Counter servedFromCacheMetric;
+    private final int cacheExpiryMs;
+    private Counter   cacheSizeMetric;
+    private Counter   servedFromCacheMetric;
 
-    public EnrichMeasurementByTemperature(int cacheExpiryMs) {
+    public EnrichMeasurementWithTemperature(int cacheExpiryMs) {
         this.cacheExpiryMs = cacheExpiryMs;
     }
 
     @Override
     public void open(final Configuration parameters) throws Exception {
         temperatureClient = new TemperatureClient();
-        cache = Maps.newHashMap();
+        cache = new HashMap<>();
         servedFromCacheMetric = getRuntimeContext().getMetricGroup().counter("temperatureRequestsServedFromCache");
         cacheSizeMetric = getRuntimeContext().getMetricGroup().counter("temperatureCacheSize");
     }

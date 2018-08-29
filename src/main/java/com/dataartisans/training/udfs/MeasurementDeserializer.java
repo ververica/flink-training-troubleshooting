@@ -1,9 +1,10 @@
 package com.dataartisans.training.udfs;
 
+import org.apache.flink.api.common.functions.RichMapFunction;
+
 import com.dataartisans.training.entities.FakeKafkaRecord;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.flink.api.common.functions.RichMapFunction;
 
 
 /**

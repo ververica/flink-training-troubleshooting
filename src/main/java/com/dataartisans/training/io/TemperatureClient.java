@@ -1,21 +1,29 @@
 package com.dataartisans.training.io;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class TemperatureClient {
 
-    private ExecutorService pool = Executors.newFixedThreadPool(30,
-            new ThreadFactoryBuilder().setNameFormat("temp-client-thread-%d").build());
+    private static ExecutorService pool = Executors.newFixedThreadPool(30,
+            new ThreadFactory() {
+                private final ThreadFactory threadFactory = Executors.defaultThreadFactory();
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread thread = threadFactory.newThread(r);
+                    thread.setName("temp-client-" + thread.getName());
+                    return thread;
+                }
+            });
 
     private static final float  TEMPERATURE_LIMIT = 100;
-    private              Random rand              = new Random(42);
+    private        final Random rand              = new Random(42);
 
     public Float getTemperatureFor(String location) throws Exception {
         return new TemperatureSupplier().get();

@@ -1,11 +1,12 @@
 package com.dataartisans.training.udfs;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
-import org.apache.commons.collections.LRUMap;
 import org.apache.flink.api.common.functions.MapFunction;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.collections.map.LRUMap;
+
+import java.util.Arrays;
 import java.util.List;
 
 public class MeasurementProjection implements MapFunction<JsonNode, JsonNode> {
@@ -13,8 +14,8 @@ public class MeasurementProjection implements MapFunction<JsonNode, JsonNode> {
     private List retainedFields;
 
     public MeasurementProjection(String... retainedFields) {
-        new LRUMap().getMaximumSize();
-        this.retainedFields = Lists.newArrayList(retainedFields);
+        new LRUMap().maxSize();
+        this.retainedFields = Arrays.asList(retainedFields);
     }
 
     @Override

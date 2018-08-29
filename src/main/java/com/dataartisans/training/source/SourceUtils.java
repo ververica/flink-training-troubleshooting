@@ -4,13 +4,13 @@ import com.dataartisans.training.entities.Measurement;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.flink.shaded.guava18.com.google.common.collect.Lists;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -20,7 +20,7 @@ public class SourceUtils {
     public static final int                NUM_OF_MEASUREMENTS = 100_000;
     public static final int                RANDOM_SEED         = 1;
     public static final float              FAILURE_RATE        = 0.0001f;
-    public static final ArrayList<Integer> IDLE_PARTITIONS     = Lists.newArrayList(0, 4);
+    public static final List<Integer>      IDLE_PARTITIONS     = Arrays.asList(0, 4);
 
     public static FakeKafkaSource createFakeKafkaSource() {
         List<byte[]> serializedMeasurements = createSerializedMeasurements();
@@ -33,7 +33,7 @@ public class SourceUtils {
 
         final List<String> locations = readLocationsFromFile();
 
-        List<byte[]> measurements = Lists.newArrayList();
+        List<byte[]> measurements = new ArrayList<>();
         for (int i = 0; i < NUM_OF_MEASUREMENTS; i++) {
             Measurement nextMeasurement = new Measurement(rand.nextInt(100),
                     rand.nextDouble() * 100, locations.get(rand.nextInt(locations.size())));
@@ -48,9 +48,9 @@ public class SourceUtils {
     }
 
     private static List<String> readLocationsFromFile() {
-        List<String> locations = Lists.newArrayList();
+        List<String> locations = new ArrayList<>();
         try (InputStream is = SourceUtils.class.getResourceAsStream("/cities.csv");
-             BufferedReader br = new BufferedReader(new InputStreamReader(is));) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));) {
             String city;
             while ((city = br.readLine()) != null) {
                 locations.add(city);

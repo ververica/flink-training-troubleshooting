@@ -1,8 +1,9 @@
 package com.dataartisans.training.udfs;
 
+import org.apache.flink.api.common.functions.AggregateFunction;
+
 import com.dataartisans.training.entities.WindowedMeasurements;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.flink.api.common.functions.AggregateFunction;
 
 public class MeasurementAggregationFunction implements AggregateFunction<JsonNode, WindowedMeasurements, WindowedMeasurements> {
     @Override
