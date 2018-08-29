@@ -1,14 +1,28 @@
-# Flink Training - Troubleshooting Flink
+# Apache Flink® Troubleshooting Training
+
+**This repository provides a training for troubleshooting Apache Flink applications.**
 
 ## Introduction
 
-## Infrastructure
+This repository provides the basis of the hands-on part of the "Troubleshooting Flink" advanced training session at Flink Forward Berlin 2018.  
 
-There are two ways to run this job: locally in your IDE and on dA Platform. 
+### Requirements
+
+To make use of this repository participants will need:
+
+* git
+* JDK 8
+* maven
+* a Java IDE (Intellij IDEA/Eclipse)
+* access to a dA Platform instance (provided offline during the training) 
+
+### Infrastructure
+
+During the training participants will be asked to run the Flink job `TroubledStreamingJob` locally as well as on dA Platform.
 
 ### Locally
 
-Just run the main-method of `TroubledStreamingJob`. To have access to the Flink UI, replace the existing `ExecutionEnvironment` by `StreamExecutionEnvironment.createLocalEnvironmentWithWebUi(new Configuration())`. You might also want use `DataStream#print()` instead of the `DiscardingSink` for local debugging.
+Just run the main-method of `TroubledStreamingJob`. To access the Flink UI, replace the existing `ExecutionEnvironment` by `StreamExecutionEnvironment.createLocalEnvironmentWithWebUi(new Configuration())`. You might also want to use `DataStream#print()` instead of the `DiscardingSink` for local debugging.
 
 ### dA Platform
 
@@ -33,7 +47,7 @@ The pre-built job-specific dashboard consists of four rows.
 4. More details about the duration and alignment phase of the last checkpoints.
 
 
-## The Flink Job
+### The Flink Job
 
 This simple Flink job reads measurement data from a Kafka topic with eight partitions. For the purpose of this training the `KafkaConsumer` is replaced by `FakeKafkaSource`. These measurements are enriched with the current temperature based on the `location` of the measurement. Afterwards, the temperature is averaged over 30 seconds. The overall flow is depicted below:
 
@@ -41,14 +55,14 @@ Source -> Watermarks/Timestamps -> Deserialization -> Enrichment -> Filter/Proje
 
 The enrichment uses a `TemperatureClient`, which - for the purpose of this training - simulates requests to an API over the network. The enrichment operator caches the temperature for each location. The timeout of this cache is given as the parameter `cacheExpiryMs` to the constructor. The cache timeout should be seen as a business requirement and is not a parameter, which we can change for pure performance tuning purposes.
 
-# Exercises
+## Exercises
 
-## Getting Started
+### Getting Started
 
 1. Run `TroubledStreamingJob` locally and check out the Flink UI.
 2. Run `mvn install` and start the deployment via dA Application Manager on `DAP_ADDRESS`:30000. Once it has reached the "RUNNING" state, find and check out out the Flink UI, metrics dashboard and logs. In particular, you should familarize yourself with the metrics.
 
-## Correctness & Robustness Issues
+### Correctness & Robustness Issues
 
 1. In "Getting Started" you probably have noticed that your job is frequently restarting in the IDE as well as on dA Platform. Fix this issue and redeploy to dA Platform.
 
@@ -56,7 +70,7 @@ Remark: If you upload a new version of the jar via `mvn install` you need to "Ca
 
 2. Now the job is running stable, but there is no output. Investigate the issue and fix it. The Flink UI might help with this.
 
-## Performance Issues
+### Performance Issues
 
 1. Identify which task or operator currently is the bottleneck by using the backpressure monitor of the Flink UI. How could this operator be improved?
 
@@ -65,3 +79,7 @@ For the following exercises it is important to keep the `cacheExpiryMs` paramete
 2. Improve the throughput of `TroubledStreamingJob` by making serialization more efficient. You can expect an improvement of a factor of 1.5 - 2. Hint for inefficient serialization can be found in the logs of the Flink Job.
 
 3. Improve the throughput of `TroubledStreamingJob` further by identifying and inefficient user code. The backpressure monitor as well as a profiler like VisualVM can help you to identify suspicious operators.
+
+----
+
+*Apache Flink, Flink®, Apache®, the squirrel logo, and the Apache feather logo are either registered trademarks or trademarks of The Apache Software Foundation.*

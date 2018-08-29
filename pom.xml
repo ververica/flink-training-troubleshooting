@@ -38,7 +38,7 @@ under the License.
         <scala.binary.version>2.11</scala.binary.version>
         <guava.version>23.0</guava.version>
         <log4j.version>2.10.0</log4j.version>
-        <daplatform.ip>3.120.25.226</daplatform.ip>
+        <daplatform.ip>CHANGE_ME</daplatform.ip>
     </properties>
 
     <dependencies>
