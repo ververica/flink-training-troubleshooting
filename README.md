@@ -22,7 +22,7 @@ During the training participants will be asked to run the Flink job `TroubledStr
 
 ### Locally
 
-Just run the main-method of `TroubledStreamingJob`. To access the Flink UI, replace the existing `ExecutionEnvironment` by `StreamExecutionEnvironment.createLocalEnvironmentWithWebUi(new Configuration())`. You might also want to use `DataStream#print()` instead of the `DiscardingSink` for local debugging.
+Just run the main-method of `TroubledStreamingJob`. When using Intellij IDEA make sure to check "include dependencies with "Provided" scope" in the "Run Configuration". To access the Flink UI, replace the existing `ExecutionEnvironment` by `StreamExecutionEnvironment.createLocalEnvironmentWithWebUi(new Configuration())`. You might also want to use `DataStream#print()` instead of the `DiscardingSink` for local debugging.
 
 ### dA Platform
 
@@ -78,7 +78,7 @@ For the following exercises it is important to keep the `cacheExpiryMs` paramete
 
 2. Improve the throughput of `TroubledStreamingJob` by making serialization more efficient. You can expect an improvement of a factor of 1.5 - 2. Hints for inefficient serializations can be found in the logs of the Flink job.
 
-3. Improve the throughput of `TroubledStreamingJob` further by identifying any inefficient user. The backpressure monitor as well as a profiler like VisualVM can help you to identify suspicious operators.
+3. Improve the throughput of `TroubledStreamingJob` further by identifying any inefficient user code. The backpressure monitor as well as a profiler like VisualVM can help you to identify suspicious operators.
 
 ----
 
