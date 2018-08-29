@@ -128,22 +128,23 @@ under the License.
     <build>
         <plugins>
             <plugin>
-                <artifactId>exec-maven-plugin</artifactId>
-                <groupId>org.codehaus.mojo</groupId>
-                <version>1.6.0</version>
+                <groupId>com.bazaarvoice.maven.plugins</groupId>
+                <artifactId>s3-upload-maven-plugin</artifactId>
+                <version>1.4</version>
                 <executions>
                     <execution>
-                        <phase>install</phase>
-                        <id>Upload Artifact to Minio</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
                         <configuration>
-                            <executable>bin/upload_artifact.sh</executable>
-                            <arguments>
-                                <argument>${daplatform.ip}</argument>
-                            </arguments>
+                            <endpoint>http://${daplatform.ip}:30001</endpoint>
+                            <accessKey>admin</accessKey>
+                            <secretKey>password</secretKey>
+                            <bucketName>flink</bucketName>
+                            <source>target/${project.build.finalName}.jar</source>
+                            <destination>${project.build.finalName}.jar</destination>
                         </configuration>
+                        <goals>
+                            <goal>s3-upload</goal>
+                        </goals>
+                        <phase>install</phase>
                     </execution>
                 </executions>
             </plugin>
