@@ -64,7 +64,7 @@ The enrichment uses a `TemperatureClient`, which - for the purpose of this train
 
 ### Correctness & Robustness Issues
 
-1. In "Getting Started" you probably have noticed that your job is frequently restarting in the IDE as well as on dA Platform. Fix this issue and redeploy to dA Platform.
+1. In "Getting Started", you have probably noticed that your job is frequently restarting in the IDE as well as on dA Platform. Fix this issue and redeploy to dA Platform.
 
 Remark: If you upload a new version of the jar via `mvn install` you need to "Cancel" or "Suspend" the Deployment and then "Start" it again for the changes to take effect.
 
@@ -76,9 +76,9 @@ Remark: If you upload a new version of the jar via `mvn install` you need to "Ca
 
 For the following exercises it is important to keep the `cacheExpiryMs` parameter stable. You can just leave the parameter at the default value from the previous exercise. When profiling your Flink job with VisualVM or similar the bottlenecks will be most visible, if you set `cacheExpiryMs` to `Integer.MAX_VALUE`, which basically circumvents any "external IO" after a short warm-up phase.
 
-2. Improve the throughput of `TroubledStreamingJob` by making serialization more efficient. You can expect an improvement of a factor of 1.5 - 2. Hint for inefficient serialization can be found in the logs of the Flink Job.
+2. Improve the throughput of `TroubledStreamingJob` by making serialization more efficient. You can expect an improvement of a factor of 1.5 - 2. Hints for inefficient serializations can be found in the logs of the Flink job.
 
-3. Improve the throughput of `TroubledStreamingJob` further by identifying and inefficient user code. The backpressure monitor as well as a profiler like VisualVM can help you to identify suspicious operators.
+3. Improve the throughput of `TroubledStreamingJob` further by identifying any inefficient user. The backpressure monitor as well as a profiler like VisualVM can help you to identify suspicious operators.
 
 ----
 
