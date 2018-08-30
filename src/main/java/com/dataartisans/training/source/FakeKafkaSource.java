@@ -28,12 +28,11 @@ import java.util.stream.IntStream;
  * The timestamps roughly start at the epoch and are ascending per partition. The partitions themselves can be out of sync.
  * *
  */
-
 @Slf4j
 public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord> implements CheckpointedFunction {
+    private static final long serialVersionUID = 4658785571367840693L;
 
-
-    public static final  int NO_OF_PARTIONS             = 8;
+    private static final int NO_OF_PARTIONS             = 8;
     private static final int MAX_TIME_BETWEEN_EVENTS_MS = 1;
 
     private final Random rand;
@@ -61,7 +60,7 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     }
 
     @Override
-    public void open(final Configuration parameters) throws Exception {
+    public void open(final Configuration parameters) {
         indexOfThisSubtask = getRuntimeContext().getIndexOfThisSubtask();
         numberOfParallelSubtasks = getRuntimeContext().getNumberOfParallelSubtasks();
 
