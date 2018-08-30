@@ -40,18 +40,19 @@ public class TroubledStreamingJob {
 
 
         DataStream<JsonNode> sourceStream = env
-                .addSource(SourceUtils.createFakeKafkaSource())
+                .addSource(SourceUtils.createFakeKafkaSource()).name("FakeKafkaSource")
                 .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
-                .map(new MeasurementDeserializer());
+                .map(new MeasurementDeserializer()).name("Deserialization");
 
         DataStream<JsonNode> enrichedStream = sourceStream
                 .keyBy(jsonNode -> jsonNode.get("location").asText())
-                .map(new EnrichMeasurementWithTemperature(10000));
+                .map(new EnrichMeasurementWithTemperature(10000)).name("Enrichment");
 
         SingleOutputStreamOperator<WindowedMeasurements> avgValuePerLocation = enrichedStream
                 .keyBy(jsonNode -> jsonNode.get("location").asText())
                 .timeWindow(Time.of(1, TimeUnit.SECONDS))
-                .aggregate(new MeasurementAggregationFunction(), new MeasurementWindowFunction());
+                .aggregate(new MeasurementAggregationFunction(), new MeasurementWindowFunction())
+                .name("WindowedAggregationPerLocation");
 
         avgValuePerLocation.addSink(new DiscardingSink<>()); //use for performance testing in dA Platform
 //        avgValuePerLocation.print(); //use for local testing
