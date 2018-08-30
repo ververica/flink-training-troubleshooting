@@ -39,18 +39,19 @@ public class TroubledStreamingJob {
                 org.apache.flink.api.common.time.Time.of(1, TimeUnit.SECONDS)));
 
 
-        DataStream<JsonNode> sourceStream = env.addSource(SourceUtils.createFakeKafkaSource())
-                                               .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
-                                               .map(new MeasurementDeserializer());
+        DataStream<JsonNode> sourceStream = env
+                .addSource(SourceUtils.createFakeKafkaSource())
+                .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
+                .map(new MeasurementDeserializer());
 
-        DataStream<JsonNode> enrichedStream = sourceStream.keyBy(jsonNode -> jsonNode.get("location")
-                                                                                     .asText())
-                                                          .map(new EnrichMeasurementWithTemperature(10000));
+        DataStream<JsonNode> enrichedStream = sourceStream
+                .keyBy(jsonNode -> jsonNode.get("location").asText())
+                .map(new EnrichMeasurementWithTemperature(10000));
 
-        DataStream<WindowedMeasurements> avgValuePerLocation = enrichedStream.keyBy(jsonNode -> jsonNode.get("location")
-                                                                                                        .asText())
-                                                                             .timeWindow(Time.of(1, TimeUnit.SECONDS))
-                                                                             .aggregate(new MeasurementAggregationFunction(), new MeasurementWindowFunction());
+        SingleOutputStreamOperator<WindowedMeasurements> avgValuePerLocation = enrichedStream
+                .keyBy(jsonNode -> jsonNode.get("location").asText())
+                .timeWindow(Time.of(1, TimeUnit.SECONDS))
+                .aggregate(new MeasurementAggregationFunction(), new MeasurementWindowFunction());
 
         avgValuePerLocation.addSink(new DiscardingSink<>()); //use for performance testing in dA Platform
 //        avgValuePerLocation.print(); //use for local testing
