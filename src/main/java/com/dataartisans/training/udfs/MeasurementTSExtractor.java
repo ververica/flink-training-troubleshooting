@@ -11,7 +11,7 @@ public class MeasurementTSExtractor extends BoundedOutOfOrdernessTimestampExtrac
     private static final long serialVersionUID = 1162153268960980262L;
 
     public MeasurementTSExtractor() {
-        super(Time.of(100, TimeUnit.MILLISECONDS));
+        super(Time.of(250, TimeUnit.MILLISECONDS));
     }
 
     @Override

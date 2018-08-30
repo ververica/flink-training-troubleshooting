@@ -3,9 +3,11 @@ package com.dataartisans.training;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.DiscardingSink;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.util.OutputTag;
 
 import com.dataartisans.training.entities.WindowedMeasurements;
 import com.dataartisans.training.source.SourceUtils;
@@ -48,14 +50,21 @@ public class TroubledStreamingJob {
                 .keyBy(jsonNode -> jsonNode.get("location").asText())
                 .map(new EnrichMeasurementWithTemperature(10000)).name("Enrichment");
 
+        OutputTag<JsonNode> lateDataTag = new OutputTag<JsonNode>("late-data") {
+            private static final long serialVersionUID = 33513631677208956L;
+        };
+
         SingleOutputStreamOperator<WindowedMeasurements> avgValuePerLocation = enrichedStream
                 .keyBy(jsonNode -> jsonNode.get("location").asText())
                 .timeWindow(Time.of(1, TimeUnit.SECONDS))
+                .sideOutputLateData(lateDataTag)
                 .aggregate(new MeasurementAggregationFunction(), new MeasurementWindowFunction())
                 .name("WindowedAggregationPerLocation");
 
-        avgValuePerLocation.addSink(new DiscardingSink<>()); //use for performance testing in dA Platform
-//        avgValuePerLocation.print(); //use for local testing
+        avgValuePerLocation.addSink(new DiscardingSink<>()).name("NormalOutput").disableChaining(); //use for performance testing in dA Platform
+//        avgValuePerLocation.print().name("output"); //use for local testing
+
+        avgValuePerLocation.getSideOutput(lateDataTag).addSink(new DiscardingSink<>()).name("LateDataSink").disableChaining();
 
         env.execute();
     }

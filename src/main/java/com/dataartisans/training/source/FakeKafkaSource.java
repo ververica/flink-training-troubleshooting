@@ -1,10 +1,5 @@
 package com.dataartisans.training.source;
 
-import org.apache.flink.api.common.state.ListState;
-import org.apache.flink.api.common.state.ListStateDescriptor;
-import org.apache.flink.api.common.typeinfo.TypeHint;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
@@ -16,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -32,14 +26,11 @@ import java.util.stream.IntStream;
 public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord> implements CheckpointedFunction {
     private static final long serialVersionUID = 4658785571367840693L;
 
-    private static final int NO_OF_PARTIONS             = 8;
-    private static final int MAX_TIME_BETWEEN_EVENTS_MS = 1;
+    private static final int NO_OF_PARTIONS = 8;
 
     private final Random rand;
 
     private transient volatile boolean                          cancelled;
-    private transient          long[]                           lastTimestampPerPartition;
-    private transient          ListState<Tuple2<Integer, Long>> perPartitionTimestampState;
     private transient          int                              indexOfThisSubtask;
     private transient          int                              numberOfParallelSubtasks;
     private transient          List<Integer>                    assignedPartitions;
@@ -86,7 +77,7 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
                 continue;
             }
 
-            long nextTimestamp = updateTimestampForPartition(nextPartition);
+            long nextTimestamp = getTimestampForPartition(nextPartition);
 
             byte[] serializedMeasurement = serializedMeasurements.get(rand.nextInt(serializedMeasurements.size()));
 
@@ -102,12 +93,8 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
         }
     }
 
-    private long updateTimestampForPartition(int partition) {
-        if (partition != 0 && lastTimestampPerPartition[partition] == 0L) {
-            lastTimestampPerPartition[partition] = partition * 100L;
-        }
-        lastTimestampPerPartition[partition] += rand.nextInt(MAX_TIME_BETWEEN_EVENTS_MS + 1);
-        return lastTimestampPerPartition[partition];
+    private long getTimestampForPartition(int partition) {
+        return System.currentTimeMillis() + (partition * 50L);
     }
 
     @Override
@@ -116,23 +103,10 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     }
 
     @Override
-    public void snapshotState(final FunctionSnapshotContext context) throws Exception {
-        perPartitionTimestampState.clear();
-        for (final Integer partition : assignedPartitions) {
-            perPartitionTimestampState.add(new Tuple2<>(partition, lastTimestampPerPartition[partition]));
-        }
+    public void snapshotState(final FunctionSnapshotContext context) {
     }
 
     @Override
-    public void initializeState(final FunctionInitializationContext context) throws Exception {
-        perPartitionTimestampState = context.getOperatorStateStore()
-                                            .getUnionListState(new ListStateDescriptor<>("perPartitionTimestampState", TypeInformation
-                                                    .of(new TypeHint<Tuple2<Integer, Long>>() {
-                                                    })));
-
-        lastTimestampPerPartition = new long[NO_OF_PARTIONS];
-        for (Tuple2<Integer, Long> next : perPartitionTimestampState.get()) {
-            lastTimestampPerPartition[next.f0] = next.f1;
-        }
+    public void initializeState(final FunctionInitializationContext context) {
     }
 }
