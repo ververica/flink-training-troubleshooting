@@ -8,8 +8,10 @@ import com.dataartisans.training.entities.FakeKafkaRecord;
 import java.util.concurrent.TimeUnit;
 
 public class MeasurementTSExtractor extends BoundedOutOfOrdernessTimestampExtractor<FakeKafkaRecord> {
+    private static final long serialVersionUID = 1162153268960980262L;
+
     public MeasurementTSExtractor() {
-        super(Time.of(100, TimeUnit.MILLISECONDS));
+        super(Time.of(250, TimeUnit.MILLISECONDS));
     }
 
     @Override

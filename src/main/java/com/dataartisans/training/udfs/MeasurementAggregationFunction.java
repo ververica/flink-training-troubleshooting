@@ -6,6 +6,8 @@ import com.dataartisans.training.entities.WindowedMeasurements;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class MeasurementAggregationFunction implements AggregateFunction<JsonNode, WindowedMeasurements, WindowedMeasurements> {
+    private static final long serialVersionUID = 2516466974052867283L;
+
     @Override
     public WindowedMeasurements createAccumulator() {
         return new WindowedMeasurements();

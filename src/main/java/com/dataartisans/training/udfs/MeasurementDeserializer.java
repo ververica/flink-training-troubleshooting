@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Deserializes the JSON Kafka message.
  */
 public class MeasurementDeserializer extends RichMapFunction<FakeKafkaRecord, JsonNode> {
+    private static final long serialVersionUID = 4054149949298485680L;
 
     @Override
     public JsonNode map(final FakeKafkaRecord kafkaRecord) throws Exception {

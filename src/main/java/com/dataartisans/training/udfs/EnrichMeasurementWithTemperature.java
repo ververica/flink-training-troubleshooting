@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EnrichMeasurementWithTemperature extends RichMapFunction<JsonNode, JsonNode> {
+    private static final long serialVersionUID = -4682640428731250473L;
 
     private transient TemperatureClient                  temperatureClient;
     private transient Map<String, TemperatureCacheEntry> cache;
