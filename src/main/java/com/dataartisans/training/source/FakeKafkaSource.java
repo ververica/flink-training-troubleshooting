@@ -38,9 +38,11 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     private final List<byte[]>  serializedMeasurements;
     private final double        poisonPillRate;
     private final BitSet        idlePartitions;
+    private final boolean       throttled;
 
-    FakeKafkaSource(final int seed, final float poisonPillRate, List<Integer> idlePartitions, List<byte[]> serializedMeasurements) {
+    FakeKafkaSource(final int seed, final float poisonPillRate, List<Integer> idlePartitions, List<byte[]> serializedMeasurements, boolean throttled) {
         this.poisonPillRate = poisonPillRate;
+        this.throttled = throttled;
         this.idlePartitions = new BitSet(NO_OF_PARTIONS);
         for (int i : idlePartitions) {
             this.idlePartitions.set(i);
@@ -88,7 +90,10 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
             synchronized (sourceContext.getCheckpointLock()) {
                 sourceContext.collect(new FakeKafkaRecord(nextTimestamp, null, serializedMeasurement,
                         nextPartition));
+            }
 
+            if (throttled) {
+                Thread.sleep(1);
             }
         }
     }

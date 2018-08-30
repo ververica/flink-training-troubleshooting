@@ -22,9 +22,9 @@ public class SourceUtils {
     public static final float              FAILURE_RATE        = 0.0001f;
     public static final List<Integer>      IDLE_PARTITIONS     = Arrays.asList(0, 4);
 
-    public static FakeKafkaSource createFakeKafkaSource() {
+    public static FakeKafkaSource createFakeKafkaSource(boolean throttled) {
         List<byte[]> serializedMeasurements = createSerializedMeasurements();
-        return new FakeKafkaSource(RANDOM_SEED, FAILURE_RATE, IDLE_PARTITIONS, serializedMeasurements);
+        return new FakeKafkaSource(RANDOM_SEED, FAILURE_RATE, IDLE_PARTITIONS, serializedMeasurements, throttled);
     }
 
     private static List<byte[]> createSerializedMeasurements() {

@@ -80,6 +80,17 @@ For the following exercises it is important to keep the `cacheExpiryMs` paramete
 
 3. Improve the throughput of `TroubledStreamingJob` further by identifying any inefficient user code. The backpressure monitor as well as a profiler like VisualVM can help you to identify suspicious operators.
 
+### Latency Issues (Bonus)
+
+For this bonus task, we will look at the event time lag of the `WindowedAggregationPerLocation` operator. This is the time that the reporting of a window result lags behind processing time.
+
+ *Please note that the slowest source partition lags 350ms behind. Anything on top of this is added by your Flink job.*
+
+1. Run the Flink job with a throttled source by providing the `throttled` argument to
+  - the deployment configuration (in dA Application Manager)
+  - the program arguments (locally in IntelliJ IDEA)
+2. Reduce the 99th percentile of the event time lag of the `WindowedAggregationPerLocation` operator. The various `eventTimeLag_p99` metric will show the current value.
+
 ----
 
 *Apache Flink, Flink®, Apache®, the squirrel logo, and the Apache feather logo are either registered trademarks or trademarks of The Apache Software Foundation.*
