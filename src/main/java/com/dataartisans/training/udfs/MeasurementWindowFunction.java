@@ -7,6 +7,8 @@ import org.apache.flink.util.Collector;
 import com.dataartisans.training.entities.WindowedMeasurements;
 
 public class MeasurementWindowFunction implements WindowFunction<WindowedMeasurements, WindowedMeasurements, String, TimeWindow> {
+    private static final long serialVersionUID = -1083906142198231377L;
+
     @Override
     public void apply(final String location, final TimeWindow window, final Iterable<WindowedMeasurements> input, final Collector<WindowedMeasurements> out) throws Exception {
         WindowedMeasurements aggregate = input.iterator().next();
