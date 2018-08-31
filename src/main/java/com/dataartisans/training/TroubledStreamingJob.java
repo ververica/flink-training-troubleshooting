@@ -71,6 +71,7 @@ public class TroubledStreamingJob {
 
         DataStream<JsonNode> sourceStream = env
                 .addSource(SourceUtils.createFakeKafkaSource()).name("FakeKafkaSource")
+                .rebalance()
                 .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
                 .flatMap(new MeasurementDeserializer()).name("Deserialization");
 
