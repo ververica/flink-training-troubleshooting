@@ -3,8 +3,8 @@ package com.dataartisans.training.udfs;
 import org.apache.flink.api.common.functions.RichMapFunction;
 
 import com.dataartisans.training.entities.FakeKafkaRecord;
+import com.dataartisans.training.source.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 /**
@@ -19,8 +19,7 @@ public class MeasurementDeserializer extends RichMapFunction<FakeKafkaRecord, Js
     }
 
     private JsonNode deserialize(final byte[] bytes) throws java.io.IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(bytes, JsonNode.class);
+        return ObjectMapperSingleton.getInstance().readValue(bytes, JsonNode.class);
     }
 
 }
