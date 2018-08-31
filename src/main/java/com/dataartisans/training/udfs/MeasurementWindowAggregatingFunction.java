@@ -8,14 +8,14 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
 import com.dataartisans.training.DoNotChangeThis;
+import com.dataartisans.training.entities.Measurement;
 import com.dataartisans.training.entities.WindowedMeasurements;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MeasurementWindowAggregatingFunction
-        extends ProcessWindowFunction<JsonNode, WindowedMeasurements, String, TimeWindow> {
+        extends ProcessWindowFunction<Measurement, WindowedMeasurements, String, TimeWindow> {
     private static final long serialVersionUID = -1083906142198231377L;
 
     public static final  Logger log                        = LoggerFactory.getLogger(MeasurementWindowAggregatingFunction.class);
@@ -32,12 +32,12 @@ public class MeasurementWindowAggregatingFunction
     public void process(
             final String location,
             final Context context,
-            final Iterable<JsonNode> input,
+            final Iterable<Measurement> input,
             final Collector<WindowedMeasurements> out) {
 
         WindowedMeasurements aggregate = new WindowedMeasurements();
-        for (JsonNode record : input) {
-            double result = calculate(Double.valueOf(record.get("value").asText()), Double.valueOf(record.get("temperature").asText()));
+        for (Measurement record : input) {
+            double result = calculate(Double.valueOf(record.getValue()), Double.valueOf(record.getTemperature()));
             aggregate.setSumPerWindow(aggregate.getSumPerWindow() + result);
             aggregate.setEventsPerWindow(aggregate.getEventsPerWindow() + 1);
         }

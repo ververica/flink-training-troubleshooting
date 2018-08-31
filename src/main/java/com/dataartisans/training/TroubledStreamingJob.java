@@ -16,13 +16,13 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.FileUtils;
 import org.apache.flink.util.OutputTag;
 
+import com.dataartisans.training.entities.Measurement;
 import com.dataartisans.training.entities.WindowedMeasurements;
 import com.dataartisans.training.source.SourceUtils;
 import com.dataartisans.training.udfs.EnrichMeasurementWithTemperatureAsync;
 import com.dataartisans.training.udfs.MeasurementDeserializer;
 import com.dataartisans.training.udfs.MeasurementTSExtractor;
 import com.dataartisans.training.udfs.MeasurementWindowAggregatingFunction;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.File;
 import java.net.URI;
@@ -70,21 +70,20 @@ public class TroubledStreamingJob {
                 org.apache.flink.api.common.time.Time.of(10, TimeUnit.SECONDS),
                 org.apache.flink.api.common.time.Time.of(1, TimeUnit.SECONDS)));
 
-        DataStream<JsonNode> sourceStream = env
+        DataStream<Measurement> sourceStream = env
                 .addSource(SourceUtils.createFakeKafkaSource()).name("FakeKafkaSource")
                 .assignTimestampsAndWatermarks(new MeasurementTSExtractor(Time.of(250, TimeUnit.MILLISECONDS), Time.of(100, TimeUnit.MILLISECONDS)))
                 .flatMap(new MeasurementDeserializer()).name("Deserialization");
 
-        OutputTag<JsonNode> lateDataTag = new OutputTag<JsonNode>("late-data") {
+        OutputTag<Measurement> lateDataTag = new OutputTag<Measurement>("late-data") {
             private static final long serialVersionUID = 33513631677208956L;
         };
 
-        DataStream<JsonNode> enrichedStream = AsyncDataStream.unorderedWait(sourceStream.keyBy(jsonNode -> jsonNode.get("location")
-                .asText()), new EnrichMeasurementWithTemperatureAsync(10000), 0, TimeUnit.MILLISECONDS, 20);
+        DataStream<Measurement> enrichedStream = AsyncDataStream.unorderedWait(sourceStream.keyBy(measurement -> measurement.getLocation()), new EnrichMeasurementWithTemperatureAsync(10000), 0, TimeUnit.MILLISECONDS, 20);
 
 
         SingleOutputStreamOperator<WindowedMeasurements> aggregatedPerLocation = enrichedStream
-                .keyBy(jsonNode -> jsonNode.get("location").asText())
+                .keyBy(measurement -> measurement.getLocation())
                 .timeWindow(Time.of(1, TimeUnit.SECONDS))
                 .sideOutputLateData(lateDataTag)
                 .process(new MeasurementWindowAggregatingFunction())
