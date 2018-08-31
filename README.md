@@ -39,11 +39,11 @@ Application Manager already contains a deployment for `TroubledStreamingJob`, wh
 * Logs (Kibana)
 * Metrics (Grafana; username: admin, password: admin)
 
-The pre-built job-specific dashboard consists of four rows. 
+The pre-built job-specific dashboard consists of four rows:
 
-1. General health statistics for the job (uptime, number of restarts, completed/failed checkpoints). 
-2. Number of records emitted per second from each subtask of the Kafka source. Increasing this value is our **main objective** for the performance debugging part of the training (see below).
-3. More details on the throughput of the job at different stages. 
+1. General health statistics for the job (uptime, number of restarts, completed/failed checkpoints).
+2. Number of records emitted per second from each subtask of the Kafka source. Increasing this value is our **main objective** for the performance debugging part of the training (see below). Additionally, the number of records served from the temperature cache per second.
+3. Details about the output of the job: output per second, late records per second as well as the latency distribution of the records after aggregation.
 4. More details about the duration and alignment phase of the last checkpoints.
 
 
@@ -82,14 +82,14 @@ For the following exercises it is important to keep the `cacheExpiryMs` paramete
 
 ### Latency Issues (Bonus)
 
-For this bonus task, we will look at the event time lag of the `WindowedAggregationPerLocation` operator. This is the time that the reporting of a window result lags behind processing time.
+For this bonus task, we will look at the event time lag of the `WindowedAggregationPerLocation` operator, i.e. the time that the reporting of a window result lags behind processing time. We will run the job from above with a slightly altered behaviour that throttles the source and has some more heavy computation in the window operator.
 
  *Please note that the slowest source partition lags 350ms behind. Anything on top of this is added by your Flink job.*
 
-1. Run the Flink job with a throttled source by providing the `throttled` argument to
+1. Run the Flink job with the `--latencyUseCase` argument by adding it to
   - the deployment configuration (in dA Application Manager)
   - the program arguments (locally in IntelliJ IDEA)
-2. Reduce the 99th percentile of the event time lag of the `WindowedAggregationPerLocation` operator. The various `eventTimeLag_p99` metric will show the current value.
+2. Reduce the 99th percentile of the event time lag of the `WindowedAggregationPerLocation` operator. The `eventTimeLag` metric will show the current value.
 
 ----
 

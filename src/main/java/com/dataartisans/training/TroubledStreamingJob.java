@@ -1,6 +1,7 @@
 package com.dataartisans.training;
 
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -17,13 +18,12 @@ import com.dataartisans.training.udfs.MeasurementTSExtractor;
 import com.dataartisans.training.udfs.MeasurementWindowAggregatingFunction;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class TroubledStreamingJob {
 
     public static void main(String[] args) throws Exception {
-        final boolean throttled = Arrays.asList(args).contains("throttled");
+        final boolean latencyUseCase = ParameterTool.fromArgs(args).has("latencyUseCase");
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 //        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(new Configuration());
@@ -42,7 +42,7 @@ public class TroubledStreamingJob {
                 org.apache.flink.api.common.time.Time.of(1, TimeUnit.SECONDS)));
 
         DataStream<JsonNode> sourceStream = env
-                .addSource(SourceUtils.createFakeKafkaSource(throttled)).name("FakeKafkaSource")
+                .addSource(SourceUtils.createFakeKafkaSource(latencyUseCase)).name("FakeKafkaSource")
                 .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
                 .map(new MeasurementDeserializer()).name("Deserialization");
 
@@ -58,7 +58,7 @@ public class TroubledStreamingJob {
                 .keyBy(jsonNode -> jsonNode.get("location").asText())
                 .timeWindow(Time.of(1, TimeUnit.SECONDS))
                 .sideOutputLateData(lateDataTag)
-                .process(new MeasurementWindowAggregatingFunction())
+                .process(new MeasurementWindowAggregatingFunction(latencyUseCase))
                 .name("WindowedAggregationPerLocation");
 
         aggregatedPerLocation.addSink(new DiscardingSink<>()).name("NormalOutput").disableChaining(); //use for performance testing in dA Platform

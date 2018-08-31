@@ -8,15 +8,21 @@ import org.apache.flink.util.Collector;
 
 import com.dataartisans.training.entities.WindowedMeasurements;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apache.commons.math3.util.CombinatoricsUtils;
-import org.apache.commons.math3.util.MathUtils;
 
 public class MeasurementWindowAggregatingFunction
         extends ProcessWindowFunction<JsonNode, WindowedMeasurements, String, TimeWindow> {
     private static final long serialVersionUID = -1083906142198231377L;
 
-    private DescriptiveStatisticsHistogram eventTimeLag;
+    private static final int EVENT_TIME_LAG_WINDOW_SIZE = 250_000;
+
+    private transient DescriptiveStatisticsHistogram eventTimeLag;
+
+    private final boolean doHeavyComputation;
+
+    public MeasurementWindowAggregatingFunction(boolean doHeavyComputation) {
+        this.doHeavyComputation = doHeavyComputation;
+    }
 
     @Override
     public void process(
@@ -27,7 +33,7 @@ public class MeasurementWindowAggregatingFunction
 
         WindowedMeasurements aggregate = new WindowedMeasurements();
         for (JsonNode record : input) {
-            double result = doComplexCalculation(Double.valueOf(record.get("value").asText()));
+            double result = doHeavyCalculation(Double.valueOf(record.get("value").asText()));
             aggregate.setSumPerWindow(aggregate.getSumPerWindow() + result);
             aggregate.setEventsPerWindow(aggregate.getEventsPerWindow() + 1);
         }
@@ -45,7 +51,8 @@ public class MeasurementWindowAggregatingFunction
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
 
-        eventTimeLag = getRuntimeContext().getMetricGroup().histogram("eventTimeLag", new DescriptiveStatisticsHistogram(250_000));
+        eventTimeLag = getRuntimeContext().getMetricGroup().histogram("eventTimeLag",
+                new DescriptiveStatisticsHistogram(EVENT_TIME_LAG_WINDOW_SIZE));
     }
 
     // ------------------------------------------------------------------------
@@ -56,7 +63,14 @@ public class MeasurementWindowAggregatingFunction
      * <p>Take this calculation as a needed part of the application logic that returns some unique
      * value for each input and cannot be cached.
      */
-    private static double doComplexCalculation(Double doubleValue) {
-        return CombinatoricsUtils.factorialDouble((int) (100 * doubleValue));
+    private double doHeavyCalculation(Double doubleValue) {
+        if (doHeavyComputation) {
+            long startTime = System.nanoTime();
+            CombinatoricsUtils.factorialDouble((int) (100 * doubleValue));
+            long estimatedTime = System.nanoTime() - startTime;
+            return estimatedTime;
+        } else {
+            return doubleValue;
+        }
     }
 }
