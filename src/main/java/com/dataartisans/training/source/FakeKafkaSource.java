@@ -1,5 +1,6 @@
 package com.dataartisans.training.source;
 
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
@@ -34,15 +35,14 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     private transient          int                              indexOfThisSubtask;
     private transient          int                              numberOfParallelSubtasks;
     private transient          List<Integer>                    assignedPartitions;
+    private transient          boolean                          throttled;
 
     private final List<byte[]>  serializedMeasurements;
     private final double        poisonPillRate;
     private final BitSet        idlePartitions;
-    private final boolean       throttled;
 
-    FakeKafkaSource(final int seed, final float poisonPillRate, List<Integer> idlePartitions, List<byte[]> serializedMeasurements, boolean throttled) {
+    FakeKafkaSource(final int seed, final float poisonPillRate, List<Integer> idlePartitions, List<byte[]> serializedMeasurements) {
         this.poisonPillRate = poisonPillRate;
-        this.throttled = throttled;
         this.idlePartitions = new BitSet(NO_OF_PARTIONS);
         for (int i : idlePartitions) {
             this.idlePartitions.set(i);
@@ -62,7 +62,11 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
                                       .boxed()
                                       .collect(Collectors.toList());
 
-        log.info("Now reading from partitions: {}", assignedPartitions);
+        ParameterTool jobParameters =
+                (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+        throttled = jobParameters.has("latencyUseCase");
+
+        log.info("Now reading (throttled: {}) from partitions: {}", throttled, assignedPartitions);
     }
 
 

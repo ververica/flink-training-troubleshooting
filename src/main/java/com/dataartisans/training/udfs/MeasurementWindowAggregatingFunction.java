@@ -1,5 +1,6 @@
 package com.dataartisans.training.udfs;
 
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.metrics.DescriptiveStatisticsHistogram;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
@@ -8,8 +9,10 @@ import org.apache.flink.util.Collector;
 
 import com.dataartisans.training.entities.WindowedMeasurements;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.util.CombinatoricsUtils;
 
+@Slf4j
 public class MeasurementWindowAggregatingFunction
         extends ProcessWindowFunction<JsonNode, WindowedMeasurements, String, TimeWindow> {
     private static final long serialVersionUID = -1083906142198231377L;
@@ -18,10 +21,9 @@ public class MeasurementWindowAggregatingFunction
 
     private transient DescriptiveStatisticsHistogram eventTimeLag;
 
-    private final boolean doHeavyComputation;
+    private transient boolean doHeavyComputation;
 
-    public MeasurementWindowAggregatingFunction(boolean doHeavyComputation) {
-        this.doHeavyComputation = doHeavyComputation;
+    public MeasurementWindowAggregatingFunction() {
     }
 
     @Override
@@ -51,8 +53,14 @@ public class MeasurementWindowAggregatingFunction
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
 
+        ParameterTool jobParameters =
+                (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+        doHeavyComputation = jobParameters.has("latencyUseCase");
+
         eventTimeLag = getRuntimeContext().getMetricGroup().histogram("eventTimeLag",
                 new DescriptiveStatisticsHistogram(EVENT_TIME_LAG_WINDOW_SIZE));
+
+        log.info("Initialised window function (heavy computation: {})", doHeavyComputation);
     }
 
     // ------------------------------------------------------------------------
@@ -67,8 +75,7 @@ public class MeasurementWindowAggregatingFunction
         if (doHeavyComputation) {
             long startTime = System.nanoTime();
             CombinatoricsUtils.factorialDouble((int) (100 * doubleValue));
-            long estimatedTime = System.nanoTime() - startTime;
-            return estimatedTime;
+            return System.nanoTime() - startTime;
         } else {
             return doubleValue;
         }

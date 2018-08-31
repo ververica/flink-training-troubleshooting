@@ -2,12 +2,16 @@ package com.dataartisans.training;
 
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.runtime.state.StateBackend;
+import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.environment.LocalStreamEnvironment;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.DiscardingSink;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.util.FileUtils;
 import org.apache.flink.util.OutputTag;
 
 import com.dataartisans.training.entities.WindowedMeasurements;
@@ -18,15 +22,18 @@ import com.dataartisans.training.udfs.MeasurementTSExtractor;
 import com.dataartisans.training.udfs.MeasurementWindowAggregatingFunction;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.io.File;
+import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 public class TroubledStreamingJob {
 
     public static void main(String[] args) throws Exception {
-        final boolean latencyUseCase = ParameterTool.fromArgs(args).has("latencyUseCase");
+        ParameterTool parameters = ParameterTool.fromArgs(args);
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 //        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(new Configuration());
+        env.getConfig().setGlobalJobParameters(parameters);
 
         //Time Characteristics
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
@@ -35,6 +42,13 @@ public class TroubledStreamingJob {
         //Checkpointing Configuration
         env.enableCheckpointing(5000);
         env.getCheckpointConfig().setMinPauseBetweenCheckpoints(4000);
+        if (env instanceof LocalStreamEnvironment) {
+            // configure checkpoint storage for local executions
+            String statePath = parameters.get("fsStatePath", "file:///" + System.getProperty("user.dir") + "/chkpts");
+            FileUtils.deleteDirectory(new File(new URI(statePath))); // cleanup last executions
+            StateBackend stateBackend = new FsStateBackend(statePath);
+            env.setStateBackend(stateBackend);
+        }
 
         //Restart Strategy (always restart)
         env.setRestartStrategy(RestartStrategies.failureRateRestart(10,
@@ -42,7 +56,7 @@ public class TroubledStreamingJob {
                 org.apache.flink.api.common.time.Time.of(1, TimeUnit.SECONDS)));
 
         DataStream<JsonNode> sourceStream = env
-                .addSource(SourceUtils.createFakeKafkaSource(latencyUseCase)).name("FakeKafkaSource")
+                .addSource(SourceUtils.createFakeKafkaSource()).name("FakeKafkaSource")
                 .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
                 .map(new MeasurementDeserializer()).name("Deserialization");
 
@@ -58,7 +72,7 @@ public class TroubledStreamingJob {
                 .keyBy(jsonNode -> jsonNode.get("location").asText())
                 .timeWindow(Time.of(1, TimeUnit.SECONDS))
                 .sideOutputLateData(lateDataTag)
-                .process(new MeasurementWindowAggregatingFunction(latencyUseCase))
+                .process(new MeasurementWindowAggregatingFunction())
                 .name("WindowedAggregationPerLocation");
 
         aggregatedPerLocation.addSink(new DiscardingSink<>()).name("NormalOutput").disableChaining(); //use for performance testing in dA Platform
