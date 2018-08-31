@@ -7,6 +7,7 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
+import com.dataartisans.training.DoNotChangeThis;
 import com.dataartisans.training.entities.WindowedMeasurements;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.math3.util.CombinatoricsUtils;
@@ -72,6 +73,7 @@ public class MeasurementWindowAggregatingFunction
      * <p>Take this calculation as a needed part of the application logic that returns some unique
      * value for each input and cannot be cached.
      */
+    @DoNotChangeThis
     private double doHeavyCalculation(Double doubleValue) {
         if (doHeavyComputation) {
             long startTime = System.nanoTime();
