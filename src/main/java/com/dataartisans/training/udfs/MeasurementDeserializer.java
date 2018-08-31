@@ -8,6 +8,7 @@ import org.apache.flink.util.Collector;
 import com.dataartisans.training.entities.FakeKafkaRecord;
 import com.dataartisans.training.entities.Measurement;
 import com.dataartisans.training.source.ObjectMapperSingleton;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
@@ -18,16 +19,18 @@ import java.io.IOException;
 public class MeasurementDeserializer extends RichFlatMapFunction<FakeKafkaRecord, Measurement> {
     private static final long serialVersionUID = 4054149949298485680L;
 
-    private Counter deserializationFailures;
+    private Counter      deserializationFailures;
+    private ObjectMapper mapper;
 
     @Override
     public void open(final Configuration parameters) throws Exception {
         super.open(parameters);
         deserializationFailures = getRuntimeContext().getMetricGroup().counter("deserializationFailures");
+        mapper = ObjectMapperSingleton.getInstance();
     }
 
     private Measurement deserialize(final byte[] bytes) throws java.io.IOException {
-        return ObjectMapperSingleton.getInstance().readValue(bytes, Measurement.class);
+        return mapper.readValue(bytes, Measurement.class);
     }
 
     @Override
