@@ -62,9 +62,10 @@ public class TroubledStreamingJob {
                 .name("WindowedAggregationPerLocation");
 
         aggregatedPerLocation.addSink(new DiscardingSink<>()).name("NormalOutput").disableChaining(); //use for performance testing in dA Platform
-//        aggregatedPerLocation.print().name("output"); //use for local testing
+//        aggregatedPerLocation.print().name("output").disableChaining(); //use for local testing
 
         aggregatedPerLocation.getSideOutput(lateDataTag).addSink(new DiscardingSink<>()).name("LateDataSink").disableChaining();
+//        aggregatedPerLocation.getSideOutput(lateDataTag).printToErr().name("LateDataSink").disableChaining(); //use for local testing
 
         env.execute();
     }
