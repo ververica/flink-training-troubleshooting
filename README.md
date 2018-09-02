@@ -89,8 +89,8 @@ For this bonus task, we will look at the event time lag of the `WindowedAggregat
  *Please note that the slowest source partition lags 350ms behind. Anything on top of this is added by your Flink job.*
 
 1. Run the Flink job with the `--latencyUseCase` argument by adding it to
-  - the deployment configuration (in dA Application Manager)
-  - the program arguments (locally in IntelliJ IDEA)
+   - the deployment configuration (in dA Application Manager)
+   - the program arguments (locally in IntelliJ IDEA)
 2. Reduce the 99th percentile of the event time lag of the `WindowedAggregationPerLocation` operator. The `eventTimeLag` metric will show the current value.
 
 ----
