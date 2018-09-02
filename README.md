@@ -86,7 +86,7 @@ For the following exercises it is important to keep the `cacheExpiryMs` paramete
 
 For this bonus task, we will look at the event time lag of the `WindowedAggregationPerLocation` operator, i.e. the time that the reporting of a window result lags behind processing time. We will run the job from above with a slightly altered behaviour that throttles the source and has some more heavy computation in the window operator.
 
- *Please note that the slowest source partition lags 350ms behind. Anything on top of this is added by your Flink job.*
+ *Please note that some lag is inherent in our source definitions (some sources' timestamps lag behind others) as well as our application's business logic (max out of orderness in the watermark generation). These should not be changed!*
 
 1. Run the Flink job with the `--latencyUseCase` argument by adding it to
    - the deployment configuration (in dA Application Manager)
