@@ -7,6 +7,7 @@ import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
+import com.dataartisans.training.DoNotChangeThis;
 import com.dataartisans.training.entities.FakeKafkaRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import java.util.stream.IntStream;
  * The timestamps roughly start at the epoch and are ascending per partition. The partitions themselves can be out of sync.
  * *
  */
+@DoNotChangeThis
 public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord> implements CheckpointedFunction {
     private static final long serialVersionUID = 4658785571367840693L;
 

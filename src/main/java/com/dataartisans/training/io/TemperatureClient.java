@@ -1,5 +1,7 @@
 package com.dataartisans.training.io;
 
+import com.dataartisans.training.DoNotChangeThis;
+
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -8,6 +10,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+@DoNotChangeThis
 public class TemperatureClient {
 
     private static ExecutorService pool = Executors.newFixedThreadPool(30,
@@ -32,7 +35,7 @@ public class TemperatureClient {
     public void asyncGetTemperatureFor(String location, Consumer<Float> callback) {
 
         CompletableFuture.supplyAsync(new TemperatureSupplier(), pool)
-                         .thenAcceptAsync(callback, org.apache.flink.runtime.concurrent.Executors.directExecutor());
+                .thenAcceptAsync(callback, org.apache.flink.runtime.concurrent.Executors.directExecutor());
     }
 
     private class TemperatureSupplier implements Supplier<Float> {
