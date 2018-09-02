@@ -37,7 +37,7 @@ public class MeasurementWindowAggregatingFunction
 
         WindowedMeasurements aggregate = new WindowedMeasurements();
         for (JsonNode record : input) {
-            double result = doHeavyCalculation(Double.valueOf(record.get("value").asText()));
+            double result = calculate(Double.valueOf(record.get("value").asText()), Double.valueOf(record.get("temperature").asText()));
             aggregate.setSumPerWindow(aggregate.getSumPerWindow() + result);
             aggregate.setEventsPerWindow(aggregate.getEventsPerWindow() + 1);
         }
@@ -74,13 +74,13 @@ public class MeasurementWindowAggregatingFunction
      * value for each input and cannot be cached.
      */
     @DoNotChangeThis
-    private double doHeavyCalculation(Double doubleValue) {
+    private double calculate(Double doubleValue, final Double temperature) {
         if (doHeavyComputation) {
             long startTime = System.nanoTime();
-            CombinatoricsUtils.factorialDouble((int) (100 * doubleValue));
+            CombinatoricsUtils.factorialDouble((int) (100 * Math.max(doubleValue, temperature)));
             return System.nanoTime() - startTime;
         } else {
-            return doubleValue;
+            return Math.max(doubleValue, temperature);
         }
     }
 }

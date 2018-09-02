@@ -49,7 +49,7 @@ The pre-built job-specific dashboard consists of four rows:
 
 ### The Flink Job
 
-This simple Flink job reads measurement data from a Kafka topic with eight partitions. For the purpose of this training the `KafkaConsumer` is replaced by `FakeKafkaSource`. These measurements are enriched with the current temperature based on the `location` of the measurement. Afterwards, the measurement value as well as the temperature are averaged over 1 second. The overall flow is depicted below:
+This simple Flink job reads measurement data from a Kafka topic with eight partitions. For the purpose of this training the `KafkaConsumer` is replaced by `FakeKafkaSource`. These measurements are enriched with the current temperature based on the `location` of the measurement. Afterwards, the result of a calculation based on temperature and measurement value is averaged over 1 second. The overall flow is depicted below:
 
 Source -> Watermarks/Timestamps -> Deserialization -> Enrichment -> Windowed Aggregation -> Sink  
 
