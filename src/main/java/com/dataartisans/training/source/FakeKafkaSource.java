@@ -1,5 +1,6 @@
 package com.dataartisans.training.source;
 
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
@@ -34,6 +35,7 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     private transient          int                              indexOfThisSubtask;
     private transient          int                              numberOfParallelSubtasks;
     private transient          List<Integer>                    assignedPartitions;
+    private transient          boolean                          throttled;
 
     private final List<byte[]>  serializedMeasurements;
     private final double        poisonPillRate;
@@ -60,7 +62,11 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
                                       .boxed()
                                       .collect(Collectors.toList());
 
-        log.info("Now reading from partitions: {}", assignedPartitions);
+        ParameterTool jobParameters =
+                (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+        throttled = jobParameters.has("latencyUseCase");
+
+        log.info("Now reading (throttled: {}) from partitions: {}", throttled, assignedPartitions);
     }
 
 
@@ -88,7 +94,10 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
             synchronized (sourceContext.getCheckpointLock()) {
                 sourceContext.collect(new FakeKafkaRecord(nextTimestamp, null, serializedMeasurement,
                         nextPartition));
+            }
 
+            if (throttled) {
+                Thread.sleep(1);
             }
         }
     }
