@@ -3,7 +3,8 @@ package com.dataartisans.training.source;
 import com.dataartisans.training.entities.Measurement;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,13 +15,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-@Slf4j
 public class SourceUtils {
 
-    public static final int                NUM_OF_MEASUREMENTS = 100_000;
-    public static final int                RANDOM_SEED         = 1;
-    public static final float              FAILURE_RATE        = 0.0001f;
-    public static final List<Integer>      IDLE_PARTITIONS     = Arrays.asList(0, 4);
+    public static final Logger log = LoggerFactory.getLogger(SourceUtils.class);
+
+    public static final int           NUM_OF_MEASUREMENTS = 100_000;
+    public static final int           RANDOM_SEED         = 1;
+    public static final float         FAILURE_RATE        = 0.0001f;
+    public static final List<Integer> IDLE_PARTITIONS     = Arrays.asList(0, 4);
 
     public static FakeKafkaSource createFakeKafkaSource() {
         List<byte[]> serializedMeasurements = createSerializedMeasurements();
@@ -50,7 +52,7 @@ public class SourceUtils {
     private static List<String> readLocationsFromFile() {
         List<String> locations = new ArrayList<>();
         try (InputStream is = SourceUtils.class.getResourceAsStream("/cities.csv");
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));) {
+             BufferedReader br = new BufferedReader(new InputStreamReader(is));) {
             String city;
             while ((city = br.readLine()) != null) {
                 locations.add(city);
