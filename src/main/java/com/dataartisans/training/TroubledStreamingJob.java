@@ -1,6 +1,7 @@
 package com.dataartisans.training;
 
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
+import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.Path;
@@ -9,6 +10,7 @@ import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamUtils;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.DiscardingSink;
@@ -23,6 +25,7 @@ import com.dataartisans.training.udfs.EnrichMeasurementWithTemperatureAsync;
 import com.dataartisans.training.udfs.MeasurementDeserializer;
 import com.dataartisans.training.udfs.MeasurementTSExtractor;
 import com.dataartisans.training.udfs.MeasurementWindowAggregatingFunction;
+import com.dataartisans.training.udfs.MeasurementWindowProcessingFunction;
 
 import java.io.File;
 import java.net.URI;
@@ -59,7 +62,8 @@ public class TroubledStreamingJob {
 
         //Time Characteristics
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
-        env.getConfig().setAutoWatermarkInterval(2000);
+        env.getConfig().setAutoWatermarkInterval(50);
+        env.setBufferTimeout(10);
 
         //Checkpointing Configuration
         env.enableCheckpointing(5000);
@@ -79,14 +83,21 @@ public class TroubledStreamingJob {
             private static final long serialVersionUID = 33513631677208956L;
         };
 
-        DataStream<Measurement> enrichedStream = AsyncDataStream.unorderedWait(sourceStream.keyBy(measurement -> measurement.getLocation()), new EnrichMeasurementWithTemperatureAsync(10000), 0, TimeUnit.MILLISECONDS, 20);
+        KeySelector<Measurement, String> getLocation = Measurement::getLocation;
+        DataStream<Measurement> enrichedStream = AsyncDataStream.unorderedWait(
+                sourceStream.keyBy(getLocation),
+                new EnrichMeasurementWithTemperatureAsync(10000),
+                0,
+                TimeUnit.MILLISECONDS,
+                20);
 
-
-        SingleOutputStreamOperator<WindowedMeasurements> aggregatedPerLocation = enrichedStream
-                .keyBy(measurement -> measurement.getLocation())
+        SingleOutputStreamOperator<WindowedMeasurements> aggregatedPerLocation =
+                DataStreamUtils.reinterpretAsKeyedStream(enrichedStream, getLocation)
                 .timeWindow(Time.of(1, TimeUnit.SECONDS))
                 .sideOutputLateData(lateDataTag)
-                .process(new MeasurementWindowAggregatingFunction())
+                .aggregate(
+                        new MeasurementWindowAggregatingFunction(parameters),
+                        new MeasurementWindowProcessingFunction())
                 .name("WindowedAggregationPerLocation");
 
         if (local) {
