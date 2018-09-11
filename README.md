@@ -22,7 +22,7 @@ During the training participants will be asked to run the Flink job `TroubledStr
 
 ### Locally
 
-Just run the main-method of `TroubledStreamingJob`. When using IntelliJ IDEA, make sure to check `include dependencies with "Provided" scope` in the "Run Configuration". To access the Flink UI, replace the existing `ExecutionEnvironment` by `StreamExecutionEnvironment.createLocalEnvironmentWithWebUi(new Configuration())`. You might also want to use `DataStream#print()` instead of the `DiscardingSink` for local debugging.
+Just run the single test `TroubledStreamingJobRunner` which will call main with a local configuration and automatically pulls in dependencies with "Provided" scope. 
 
 ### dA Platform
 

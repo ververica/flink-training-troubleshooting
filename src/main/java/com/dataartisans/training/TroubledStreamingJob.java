@@ -2,6 +2,8 @@ package com.dataartisans.training;
 
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.core.fs.Path;
 import org.apache.flink.runtime.state.StateBackend;
 import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.streaming.api.TimeCharacteristic;
@@ -24,6 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 
 public class TroubledStreamingJob {
@@ -31,8 +34,15 @@ public class TroubledStreamingJob {
     public static void main(String[] args) throws Exception {
         ParameterTool parameters = ParameterTool.fromArgs(args);
 
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-//        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(new Configuration());
+        final boolean local = parameters.getBoolean("local", false);
+
+        StreamExecutionEnvironment env;
+        if (local) {
+            env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(new Configuration());
+        } else {
+            env = StreamExecutionEnvironment.getExecutionEnvironment();
+        }
+
         env.getConfig().setGlobalJobParameters(parameters);
 
         //Time Characteristics
@@ -42,18 +52,26 @@ public class TroubledStreamingJob {
         //Checkpointing Configuration
         env.enableCheckpointing(5000);
         env.getCheckpointConfig().setMinPauseBetweenCheckpoints(4000);
+
         if (env instanceof LocalStreamEnvironment) {
-            // configure checkpoint storage for local executions
-            String statePath = parameters.get("fsStatePath", "file:///" + System.getProperty("user.dir") + "/chkpts");
-            FileUtils.deleteDirectory(new File(new URI(statePath))); // cleanup last executions
-            StateBackend stateBackend = new FsStateBackend(statePath);
+            String statePath = parameters.get("fsStatePath");
+            Path checkpointPath;
+            if (statePath != null) {
+                FileUtils.deleteDirectory(new File(new URI(statePath)));
+                checkpointPath = Path.fromLocalFile(new File(new URI(statePath)));
+            } else {
+                checkpointPath = Path.fromLocalFile(Files.createTempDirectory("checkpoints").toFile());
+            }
+
+            StateBackend stateBackend = new FsStateBackend(checkpointPath);
             env.setStateBackend(stateBackend);
         }
 
         //Restart Strategy (always restart)
         env.setRestartStrategy(RestartStrategies.failureRateRestart(10,
                 org.apache.flink.api.common.time.Time.of(10, TimeUnit.SECONDS),
-                org.apache.flink.api.common.time.Time.of(1, TimeUnit.SECONDS)));
+                org.apache.flink.api.common.time.Time.of(1, TimeUnit.SECONDS))
+        );
 
         DataStream<JsonNode> sourceStream = env
                 .addSource(SourceUtils.createFakeKafkaSource()).name("FakeKafkaSource")
@@ -75,13 +93,14 @@ public class TroubledStreamingJob {
                 .process(new MeasurementWindowAggregatingFunction())
                 .name("WindowedAggregationPerLocation");
 
-        aggregatedPerLocation.addSink(new DiscardingSink<>()).name("NormalOutput").disableChaining(); //use for performance testing in dA Platform
-//        aggregatedPerLocation.print().name("output").disableChaining(); //use for local testing
-
-        aggregatedPerLocation.getSideOutput(lateDataTag).addSink(new DiscardingSink<>()).name("LateDataSink").disableChaining();
-//        aggregatedPerLocation.getSideOutput(lateDataTag).printToErr().name("LateDataSink").disableChaining(); //use for local testing
+        if (local) {
+            aggregatedPerLocation.print().name("output").disableChaining();
+            aggregatedPerLocation.getSideOutput(lateDataTag).printToErr().name("LateDataSink").disableChaining();
+        } else {
+            aggregatedPerLocation.addSink(new DiscardingSink<>()).name("NormalOutput").disableChaining();
+            aggregatedPerLocation.getSideOutput(lateDataTag).addSink(new DiscardingSink<>()).name("LateDataSink").disableChaining();
+        }
 
         env.execute();
     }
-
 }
