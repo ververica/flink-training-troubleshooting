@@ -22,7 +22,7 @@ During the training participants will be asked to run the Flink job `TroubledStr
 
 ### Locally
 
-Just run the single test `TroubledStreamingJobRunner` which will call main with a local configuration and automatically pulls in dependencies with "Provided" scope. 
+Just run the single test `TroubledStreamingJobRunner` which will call the main-method of TroubledStreamingJob with a local configuration and automatically pull in dependencies with "Provided" scope.
 
 ### dA Platform
 
