@@ -9,7 +9,6 @@ import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
-import org.apache.flink.streaming.api.environment.LocalStreamEnvironment;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.DiscardingSink;
 import org.apache.flink.streaming.api.windowing.time.Time;
@@ -39,6 +38,18 @@ public class TroubledStreamingJob {
         StreamExecutionEnvironment env;
         if (local) {
             env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(new Configuration());
+
+            String statePath = parameters.get("fsStatePath");
+            Path checkpointPath;
+            if (statePath != null) {
+                FileUtils.deleteDirectory(new File(new URI(statePath)));
+                checkpointPath = Path.fromLocalFile(new File(new URI(statePath)));
+            } else {
+                checkpointPath = Path.fromLocalFile(Files.createTempDirectory("checkpoints").toFile());
+            }
+
+            StateBackend stateBackend = new FsStateBackend(checkpointPath);
+            env.setStateBackend(stateBackend);
         } else {
             env = StreamExecutionEnvironment.getExecutionEnvironment();
         }
@@ -53,25 +64,10 @@ public class TroubledStreamingJob {
         env.enableCheckpointing(5000);
         env.getCheckpointConfig().setMinPauseBetweenCheckpoints(4000);
 
-        if (env instanceof LocalStreamEnvironment) {
-            String statePath = parameters.get("fsStatePath");
-            Path checkpointPath;
-            if (statePath != null) {
-                FileUtils.deleteDirectory(new File(new URI(statePath)));
-                checkpointPath = Path.fromLocalFile(new File(new URI(statePath)));
-            } else {
-                checkpointPath = Path.fromLocalFile(Files.createTempDirectory("checkpoints").toFile());
-            }
-
-            StateBackend stateBackend = new FsStateBackend(checkpointPath);
-            env.setStateBackend(stateBackend);
-        }
-
         //Restart Strategy (always restart)
         env.setRestartStrategy(RestartStrategies.failureRateRestart(10,
                 org.apache.flink.api.common.time.Time.of(10, TimeUnit.SECONDS),
-                org.apache.flink.api.common.time.Time.of(1, TimeUnit.SECONDS))
-        );
+                org.apache.flink.api.common.time.Time.of(1, TimeUnit.SECONDS)));
 
         DataStream<JsonNode> sourceStream = env
                 .addSource(SourceUtils.createFakeKafkaSource()).name("FakeKafkaSource")

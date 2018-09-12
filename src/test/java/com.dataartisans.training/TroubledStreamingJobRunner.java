@@ -6,7 +6,7 @@ public class TroubledStreamingJobRunner {
 
     @Test
     public void run() throws Exception {
-        String[] args = {"--test", "true"};
+        String[] args = {"--local", "true"};
         TroubledStreamingJob.main(args);
     }
 }
