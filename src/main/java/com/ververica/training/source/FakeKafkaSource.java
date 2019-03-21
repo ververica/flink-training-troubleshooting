@@ -1,4 +1,4 @@
-package com.dataartisans.training.source;
+package com.ververica.training.source;
 
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
@@ -7,8 +7,8 @@ import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
-import com.dataartisans.training.DoNotChangeThis;
-import com.dataartisans.training.entities.FakeKafkaRecord;
+import com.ververica.training.DoNotChangeThis;
+import com.ververica.training.entities.FakeKafkaRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

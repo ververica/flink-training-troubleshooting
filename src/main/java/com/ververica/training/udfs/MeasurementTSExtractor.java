@@ -1,9 +1,9 @@
-package com.dataartisans.training.udfs;
+package com.ververica.training.udfs;
 
 import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor;
 import org.apache.flink.streaming.api.windowing.time.Time;
 
-import com.dataartisans.training.entities.FakeKafkaRecord;
+import com.ververica.training.entities.FakeKafkaRecord;
 
 import java.util.concurrent.TimeUnit;
 

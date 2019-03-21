@@ -1,4 +1,4 @@
-package com.dataartisans.training.entities;
+package com.ververica.training.entities;
 
 
 import java.util.Objects;
@@ -94,9 +94,4 @@ public class WindowedMeasurements {
         sb.append('}');
         return sb.toString();
     }
-
-    public double getAvgTemperature() {
-        return sumPerWindow / eventsPerWindow;
-    }
-
 }

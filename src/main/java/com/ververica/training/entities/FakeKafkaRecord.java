@@ -1,4 +1,4 @@
-package com.dataartisans.training.entities;
+package com.ververica.training.entities;
 
 import java.util.Arrays;
 import java.util.Objects;

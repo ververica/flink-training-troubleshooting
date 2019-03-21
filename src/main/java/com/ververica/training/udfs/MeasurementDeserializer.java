@@ -1,9 +1,9 @@
-package com.dataartisans.training.udfs;
+package com.ververica.training.udfs;
 
 import org.apache.flink.api.common.functions.RichMapFunction;
 
-import com.dataartisans.training.entities.FakeKafkaRecord;
-import com.dataartisans.training.source.ObjectMapperSingleton;
+import com.ververica.training.entities.FakeKafkaRecord;
+import com.ververica.training.source.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.JsonNode;
 
 

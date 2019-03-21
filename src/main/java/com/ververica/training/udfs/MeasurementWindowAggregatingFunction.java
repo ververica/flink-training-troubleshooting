@@ -1,4 +1,4 @@
-package com.dataartisans.training.udfs;
+package com.ververica.training.udfs;
 
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
@@ -7,8 +7,8 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
-import com.dataartisans.training.DoNotChangeThis;
-import com.dataartisans.training.entities.WindowedMeasurements;
+import com.ververica.training.DoNotChangeThis;
+import com.ververica.training.entities.WindowedMeasurements;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.slf4j.Logger;
@@ -37,7 +37,7 @@ public class MeasurementWindowAggregatingFunction
 
         WindowedMeasurements aggregate = new WindowedMeasurements();
         for (JsonNode record : input) {
-            double result = calculate(Double.valueOf(record.get("value").asText()), Double.valueOf(record.get("temperature").asText()));
+            double result = calculate(Double.valueOf(record.get("value").asText()));
             aggregate.setSumPerWindow(aggregate.getSumPerWindow() + result);
             aggregate.setEventsPerWindow(aggregate.getEventsPerWindow() + 1);
         }
@@ -74,13 +74,13 @@ public class MeasurementWindowAggregatingFunction
      * value for each input and cannot be cached.
      */
     @DoNotChangeThis
-    private double calculate(Double doubleValue, final Double temperature) {
+    private double calculate(Double value) {
         if (doHeavyComputation) {
             long startTime = System.nanoTime();
-            CombinatoricsUtils.factorialDouble((int) (100 * Math.max(doubleValue, temperature)));
+            CombinatoricsUtils.factorialDouble((int) (100 * value));
             return System.nanoTime() - startTime;
         } else {
-            return Math.max(doubleValue, temperature);
+            return value;
         }
     }
 }

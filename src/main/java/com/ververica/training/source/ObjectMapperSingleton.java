@@ -1,4 +1,4 @@
-package com.dataartisans.training.source;
+package com.ververica.training.source;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

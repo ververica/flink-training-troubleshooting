@@ -1,4 +1,4 @@
-package com.dataartisans.training;
+package com.ververica.training;
 
 import org.junit.Test;
 

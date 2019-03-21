@@ -21,24 +21,23 @@ under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.dataartisans</groupId>
+    <groupId>com.ververica</groupId>
     <artifactId>flink-training-troubleshooting</artifactId>
     <version>0.1</version>
     <packaging>jar</packaging>
 
     <name>Flink Training Troubleshooting</name>
-    <url>http://www.data-artisans.com</url>
+    <url>http://www.ververica.com</url>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <flink.version>1.6.0</flink.version>
+        <flink.version>1.7.2</flink.version>
         <jackson.version>2.9.3</jackson.version>
         <scala.binary.version>2.11</scala.binary.version>
         <guava.version>23.0</guava.version>
         <log4j.version>2.10.0</log4j.version>
-        <daplatform.ip>CHANGE_ME</daplatform.ip>
     </properties>
 
     <dependencies>
@@ -72,6 +71,13 @@ under the License.
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-runtime-web_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-avro</artifactId>
             <version>${flink.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -126,27 +132,6 @@ under the License.
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>com.bazaarvoice.maven.plugins</groupId>
-                <artifactId>s3-upload-maven-plugin</artifactId>
-                <version>1.4</version>
-                <executions>
-                    <execution>
-                        <configuration>
-                            <endpoint>http://${daplatform.ip}:30001</endpoint>
-                            <accessKey>admin</accessKey>
-                            <secretKey>password</secretKey>
-                            <bucketName>flink</bucketName>
-                            <source>target/${project.build.finalName}.jar</source>
-                            <destination>${project.build.finalName}.jar</destination>
-                        </configuration>
-                        <goals>
-                            <goal>s3-upload</goal>
-                        </goals>
-                        <phase>install</phase>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- We use the maven-shade plugin to create a fat jar that contains all necessary dependencies. -->
             <!-- Change the value of <mainClass>...</mainClass> if your program entry point changes. -->
             <plugin>
@@ -184,7 +169,7 @@ under the License.
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.dataartisans.training.TroubledStreamingJob</mainClass>
+                                    <mainClass>com.ververica.training.TroubledStreamingJob</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
