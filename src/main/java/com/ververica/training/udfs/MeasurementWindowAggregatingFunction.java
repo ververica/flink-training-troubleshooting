@@ -1,10 +1,6 @@
 package com.ververica.training.udfs;
 
-import org.apache.flink.configuration.Configuration;
-import org.apache.flink.runtime.metrics.DescriptiveStatisticsHistogram;
-import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
-import org.apache.flink.util.Collector;
+import org.apache.flink.api.common.functions.AggregateFunction;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ververica.training.DoNotChangeThis;
@@ -12,45 +8,34 @@ import com.ververica.training.entities.WindowedMeasurements;
 import org.apache.commons.math3.util.CombinatoricsUtils;
 
 public class MeasurementWindowAggregatingFunction
-        extends ProcessWindowFunction<JsonNode, WindowedMeasurements, String, TimeWindow> {
+        implements AggregateFunction<JsonNode, WindowedMeasurements, WindowedMeasurements> {
     private static final long serialVersionUID = -1083906142198231377L;
 
-    private static final int    EVENT_TIME_LAG_WINDOW_SIZE = 10_000;
+    public MeasurementWindowAggregatingFunction() {}
 
-    private transient DescriptiveStatisticsHistogram eventTimeLag;
-
-    public MeasurementWindowAggregatingFunction() {
+    @Override
+    public WindowedMeasurements createAccumulator() {
+        return new WindowedMeasurements();
     }
 
     @Override
-    public void process(
-            final String location,
-            final Context context,
-            final Iterable<JsonNode> input,
-            final Collector<WindowedMeasurements> out) {
-
-        WindowedMeasurements aggregate = new WindowedMeasurements();
-        for (JsonNode record : input) {
-            double result = Double.valueOf(record.get("value").asText());
-            aggregate.setSumPerWindow(aggregate.getSumPerWindow() + result);
-            aggregate.setEventsPerWindow(aggregate.getEventsPerWindow() + 1);
-        }
-
-        final TimeWindow window = context.window();
-        aggregate.setWindowStart(window.getStart());
-        aggregate.setWindowEnd(window.getEnd());
-        aggregate.setLocation(location);
-
-        eventTimeLag.update(System.currentTimeMillis() - window.getEnd());
-        out.collect(aggregate);
+    public WindowedMeasurements add(final JsonNode record, final WindowedMeasurements aggregate) {
+        double result = Double.valueOf(record.get("value").asText());
+        aggregate.setSumPerWindow(aggregate.getSumPerWindow() + result);
+        aggregate.setEventsPerWindow(aggregate.getEventsPerWindow() + 1);
+        return aggregate;
     }
 
     @Override
-    public void open(Configuration parameters) throws Exception {
-        super.open(parameters);
+    public WindowedMeasurements getResult(final WindowedMeasurements windowedMeasurements) {
+        return windowedMeasurements;
+    }
 
-        eventTimeLag = getRuntimeContext().getMetricGroup().histogram("eventTimeLag",
-                new DescriptiveStatisticsHistogram(EVENT_TIME_LAG_WINDOW_SIZE));
+    @Override
+    public WindowedMeasurements merge(final WindowedMeasurements agg1, final WindowedMeasurements agg2) {
+        agg2.setEventsPerWindow(agg1.getEventsPerWindow() + agg2.getEventsPerWindow());
+        agg2.setSumPerWindow(agg1.getSumPerWindow() + agg2.getSumPerWindow());
+        return agg2;
     }
 
 }

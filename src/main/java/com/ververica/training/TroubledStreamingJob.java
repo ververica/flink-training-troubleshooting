@@ -20,6 +20,7 @@ import com.ververica.training.udfs.MeasurementDeserializer;
 import com.ververica.training.udfs.MeasurementTSExtractor;
 import com.ververica.training.udfs.MeasurementWindowAggregatingFunction;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ververica.training.udfs.MeasurementWindowProcessFunction;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class TroubledStreamingJob {
                 .keyBy(jsonNode -> jsonNode.get("location").asText())
                 .timeWindow(Time.of(1, TimeUnit.SECONDS))
                 .sideOutputLateData(lateDataTag)
-                .process(new MeasurementWindowAggregatingFunction())
+                .aggregate(new MeasurementWindowAggregatingFunction(), new MeasurementWindowProcessFunction())
                 .name("WindowedAggregationPerLocation")
                 .uid("WindowedAggregationPerLocation");
 
