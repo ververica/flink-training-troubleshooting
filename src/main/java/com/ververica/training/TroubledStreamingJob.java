@@ -47,7 +47,7 @@ public class TroubledStreamingJob {
 
         DataStream<JsonNode> sourceStream = env
                 .addSource(SourceUtils.createFakeKafkaSource()).name("FakeKafkaSource")
-                .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
+                .assignTimestampsAndWatermarks(new MeasurementTSExtractor()).name("Watermarks")
                 .map(new MeasurementDeserializer()).name("Deserialization");
 
         OutputTag<JsonNode> lateDataTag = new OutputTag<JsonNode>("late-data") {
