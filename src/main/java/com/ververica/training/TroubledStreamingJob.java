@@ -52,7 +52,7 @@ public class TroubledStreamingJob {
                 .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
                 .name("Watermarks")
                 .uid("Watermarks")
-                .map(new MeasurementDeserializer())
+                .flatMap(new MeasurementDeserializer())
                 .name("Deserialization")
                 .uid("Deserialization");
 
