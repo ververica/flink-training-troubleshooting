@@ -19,7 +19,7 @@ public class MeasurementWindowAggregatingFunction
     private static final long serialVersionUID = -1083906142198231377L;
 
     public static final  Logger log                        = LoggerFactory.getLogger(MeasurementWindowAggregatingFunction.class);
-    private static final int    EVENT_TIME_LAG_WINDOW_SIZE = 250_000;
+    private static final int    EVENT_TIME_LAG_WINDOW_SIZE = 10_000;
 
     private transient DescriptiveStatisticsHistogram eventTimeLag;
 
