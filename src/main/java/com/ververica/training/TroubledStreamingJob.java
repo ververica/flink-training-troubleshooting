@@ -46,9 +46,15 @@ public class TroubledStreamingJob {
         env.getCheckpointConfig().setMinPauseBetweenCheckpoints(4000);
 
         DataStream<JsonNode> sourceStream = env
-                .addSource(SourceUtils.createFakeKafkaSource()).name("FakeKafkaSource")
-                .assignTimestampsAndWatermarks(new MeasurementTSExtractor()).name("Watermarks")
-                .map(new MeasurementDeserializer()).name("Deserialization");
+                .addSource(SourceUtils.createFakeKafkaSource())
+                .name("FakeKafkaSource")
+                .uid("FakeKafkaSource")
+                .assignTimestampsAndWatermarks(new MeasurementTSExtractor())
+                .name("Watermarks")
+                .uid("Watermarks")
+                .map(new MeasurementDeserializer())
+                .name("Deserialization")
+                .uid("Deserialization");
 
         OutputTag<JsonNode> lateDataTag = new OutputTag<JsonNode>("late-data") {
             private static final long serialVersionUID = 33513631677208956L;
@@ -59,14 +65,27 @@ public class TroubledStreamingJob {
                 .timeWindow(Time.of(1, TimeUnit.SECONDS))
                 .sideOutputLateData(lateDataTag)
                 .process(new MeasurementWindowAggregatingFunction())
-                .name("WindowedAggregationPerLocation");
+                .name("WindowedAggregationPerLocation")
+                .uid("WindowedAggregationPerLocation");
 
         if (local) {
-            aggregatedPerLocation.print().name("NormalOutput").disableChaining();
-            aggregatedPerLocation.getSideOutput(lateDataTag).printToErr().name("LateDataSink").disableChaining();
+            aggregatedPerLocation.print()
+                    .name("NormalOutput")
+                    .uid("NormalOutput")
+                    .disableChaining();
+            aggregatedPerLocation.getSideOutput(lateDataTag).printToErr()
+                    .name("LateDataSink")
+                    .uid("LateDataSink")
+                    .disableChaining();
         } else {
-            aggregatedPerLocation.addSink(new DiscardingSink<>()).name("NormalOutput").disableChaining();
-            aggregatedPerLocation.getSideOutput(lateDataTag).addSink(new DiscardingSink<>()).name("LateDataSink").disableChaining();
+            aggregatedPerLocation.addSink(new DiscardingSink<>())
+                    .name("NormalOutput")
+                    .uid("NormalOutput")
+                    .disableChaining();
+            aggregatedPerLocation.getSideOutput(lateDataTag).addSink(new DiscardingSink<>())
+                    .name("LateDataSink")
+                    .uid("LateDataSink")
+                    .disableChaining();
         }
 
         env.execute();
