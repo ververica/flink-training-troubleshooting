@@ -39,7 +39,7 @@ public class TroubledStreamingJob {
 
         //Time Characteristics
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
-        env.getConfig().setAutoWatermarkInterval(2000);
+        env.getConfig().setAutoWatermarkInterval(100);
 
         //Checkpointing Configuration
         env.enableCheckpointing(5000);
