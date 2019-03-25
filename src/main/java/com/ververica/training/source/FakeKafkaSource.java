@@ -106,7 +106,7 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     }
 
     private long getTimestampForPartition(int partition) {
-        return System.currentTimeMillis() + (partition * 50L);
+        return System.currentTimeMillis() - (partition * 50L);
     }
 
     @Override
