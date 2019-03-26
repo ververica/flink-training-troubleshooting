@@ -91,7 +91,7 @@ public class TroubledStreamingJob {
         env.execute();
     }
 
-    private static StreamExecutionEnvironment configuredEnvironment(final ParameterTool parameters, final boolean local) throws IOException, URISyntaxException {
+    public static StreamExecutionEnvironment configuredEnvironment(final ParameterTool parameters, final boolean local) throws IOException, URISyntaxException {
         StreamExecutionEnvironment env;
         if (local) {
             env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(new Configuration());
