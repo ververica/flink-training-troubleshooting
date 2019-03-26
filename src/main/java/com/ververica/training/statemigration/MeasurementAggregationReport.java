@@ -6,6 +6,7 @@ package com.ververica.training.statemigration;
 public class MeasurementAggregationReport {
     private int sensorId;
     private long count;
+    private double average;
     private long latestUpdate;
 
     public MeasurementAggregationReport() {
@@ -27,6 +28,14 @@ public class MeasurementAggregationReport {
         this.count = count;
     }
 
+    public double getAverage() {
+        return average;
+    }
+
+    public void setAverage(double average) {
+        this.average = average;
+    }
+
     public long getLatestUpdate() {
         return latestUpdate;
     }
@@ -40,6 +49,7 @@ public class MeasurementAggregationReport {
         return "MeasurementAggregationReport{" +
                 "sensorId=" + sensorId +
                 ", count=" + count +
+                ", average=" + average +
                 ", latestUpdate=" + latestUpdate +
                 '}';
     }

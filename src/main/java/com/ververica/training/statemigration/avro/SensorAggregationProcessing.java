@@ -33,6 +33,7 @@ public class SensorAggregationProcessing extends SensorAggregationProcessingBase
                         .build();
             }
             currentStats.setCount(currentStats.getCount() + 1);
+            currentStats.setSum(currentStats.getSum() + measurement.getValue());
 
             // emit once per minute
             long reportingTime = (ctx.timestamp() / REPORTING_INTERVAL) * REPORTING_INTERVAL;
@@ -56,6 +57,7 @@ public class SensorAggregationProcessing extends SensorAggregationProcessingBase
         MeasurementAggregationReport report = new MeasurementAggregationReport();
         report.setSensorId(currentStats.getSensorId());
         report.setCount(currentStats.getCount());
+        report.setAverage(currentStats.getSum() / (double) currentStats.getCount());
         report.setLatestUpdate(currentStats.getLastUpdate());
 
         out.collect(report);
@@ -72,6 +74,6 @@ public class SensorAggregationProcessing extends SensorAggregationProcessingBase
 
     @Override
     public String getStateSerializerName() {
-        return "avro v1";
+        return "avro v2";
     }
 }

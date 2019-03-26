@@ -12,6 +12,11 @@
      "default": 0
      },
      {
+     "name": "sum",
+     "type": "double",
+     "default": 0.0
+     },
+     {
      "name": "lastUpdate",
      "type": "long",
      "default": 0
