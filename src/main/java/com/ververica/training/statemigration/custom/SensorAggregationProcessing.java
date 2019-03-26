@@ -32,6 +32,7 @@ public class SensorAggregationProcessing
 				currentStats.setSensorId(measurement.getSensorId());
 			}
 			currentStats.setCount(currentStats.getCount() + 1);
+			currentStats.setSum(currentStats.getSum() + measurement.getValue());
 
 			// emit once per minute
 			long reportingTime = (ctx.timestamp() / REPORTING_INTERVAL) * REPORTING_INTERVAL;
@@ -55,6 +56,7 @@ public class SensorAggregationProcessing
 		MeasurementAggregationReport report = new MeasurementAggregationReport();
 		report.setSensorId(currentStats.getSensorId());
 		report.setCount(currentStats.getCount());
+		report.setAverage(currentStats.getSum() / (double) currentStats.getCount());
 		report.setLatestUpdate(currentStats.getLastUpdate());
 
 		out.collect(report);
@@ -65,12 +67,12 @@ public class SensorAggregationProcessing
 		super.open(parameters);
 
 		final ValueStateDescriptor<AggregatedSensorStatistics> aggregationStateDesc =
-				new ValueStateDescriptor<>("aggregationStats", new AggregatedSensorStatisticsSerializerV1());
+				new ValueStateDescriptor<>("aggregationStats", new AggregatedSensorStatisticsSerializerV2());
 		aggregationState = getRuntimeContext().getState(aggregationStateDesc);
 	}
 
 	@Override
 	public String getStateSerializerName() {
-		return "custom v1";
+		return "custom v2";
 	}
 }

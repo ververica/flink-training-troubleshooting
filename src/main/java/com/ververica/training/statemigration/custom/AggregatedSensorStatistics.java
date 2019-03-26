@@ -6,6 +6,7 @@ package com.ververica.training.statemigration.custom;
 public class AggregatedSensorStatistics {
 	private int sensorId;
 	private long count;
+	private double sum;
 	private long lastUpdate;
 
 	public AggregatedSensorStatistics() {
@@ -35,4 +36,11 @@ public class AggregatedSensorStatistics {
 		this.lastUpdate = lastUpdate;
 	}
 
+	public double getSum() {
+		return sum;
+	}
+
+	public void setSum(double sum) {
+		this.sum = sum;
+	}
 }

@@ -27,7 +27,7 @@ import org.apache.flink.core.memory.DataOutputView;
 /**
  * Serializer configuration snapshot for POJO and format evolution.
  */
-public final class AggregatedSensorStatisticsSerializerSnapshotV1 implements
+public final class AggregatedSensorStatisticsSerializerSnapshotV2 implements
         TypeSerializerSnapshot<AggregatedSensorStatistics> {
     @Override
     public int getCurrentVersion() {
@@ -37,10 +37,8 @@ public final class AggregatedSensorStatisticsSerializerSnapshotV1 implements
     @Override
     public TypeSerializerSchemaCompatibility<AggregatedSensorStatistics> resolveSchemaCompatibility(
             TypeSerializer<AggregatedSensorStatistics> newSerializer) {
-        if (newSerializer instanceof AggregatedSensorStatisticsSerializerV1) {
+        if (newSerializer instanceof AggregatedSensorStatisticsSerializerV2) {
             return TypeSerializerSchemaCompatibility.compatibleAsIs();
-        } else if (newSerializer instanceof AggregatedSensorStatisticsSerializerV2) {
-            return TypeSerializerSchemaCompatibility.compatibleAfterMigration();
         } else {
             return TypeSerializerSchemaCompatibility.incompatible();
         }
@@ -48,7 +46,7 @@ public final class AggregatedSensorStatisticsSerializerSnapshotV1 implements
 
     @Override
     public TypeSerializer<AggregatedSensorStatistics> restoreSerializer() {
-        return new AggregatedSensorStatisticsSerializerV1();
+        return new AggregatedSensorStatisticsSerializerV2();
     }
 
     @Override
