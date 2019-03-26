@@ -5,6 +5,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.metrics.Counter;
 import org.apache.flink.util.Collector;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ververica.training.entities.FakeKafkaRecord;
 import com.ververica.training.entities.Measurement;
 import com.ververica.training.source.ObjectMapperSingleton;
@@ -19,11 +20,13 @@ public class MeasurementDeserializer extends RichFlatMapFunction<FakeKafkaRecord
     private static final long serialVersionUID = 4054149949298485680L;
 
     private Counter numInvalidRecords;
+    private transient ObjectMapper instance;
 
     @Override
     public void open(final Configuration parameters) throws Exception {
         super.open(parameters);
         numInvalidRecords = getRuntimeContext().getMetricGroup().counter("numInvalidRecords");
+        instance = ObjectMapperSingleton.getInstance();
     }
 
     @Override
@@ -37,7 +40,7 @@ public class MeasurementDeserializer extends RichFlatMapFunction<FakeKafkaRecord
     }
 
     private Measurement deserialize(final byte[] bytes) throws IOException {
-        return ObjectMapperSingleton.getInstance().readValue(bytes, Measurement.class);
+        return instance.readValue(bytes, Measurement.class);
     }
 
 }
