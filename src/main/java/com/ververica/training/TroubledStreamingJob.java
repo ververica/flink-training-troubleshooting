@@ -14,12 +14,12 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.FileUtils;
 import org.apache.flink.util.OutputTag;
 
+import com.ververica.training.entities.Measurement;
 import com.ververica.training.entities.WindowedMeasurements;
 import com.ververica.training.source.SourceUtils;
 import com.ververica.training.udfs.MeasurementDeserializer;
 import com.ververica.training.udfs.MeasurementTSExtractor;
 import com.ververica.training.udfs.MeasurementWindowAggregatingFunction;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.ververica.training.udfs.MeasurementWindowProcessFunction;
 
 import java.io.File;
@@ -47,7 +47,7 @@ public class TroubledStreamingJob {
         env.enableCheckpointing(5000);
         env.getCheckpointConfig().setMinPauseBetweenCheckpoints(4000);
 
-        DataStream<JsonNode> sourceStream = env
+        DataStream<Measurement> sourceStream = env
                 .addSource(SourceUtils.createFakeKafkaSource())
                 .name("FakeKafkaSource")
                 .uid("FakeKafkaSource")
@@ -58,12 +58,12 @@ public class TroubledStreamingJob {
                 .name("Deserialization")
                 .uid("Deserialization");
 
-        OutputTag<JsonNode> lateDataTag = new OutputTag<JsonNode>("late-data") {
+        OutputTag<Measurement> lateDataTag = new OutputTag<Measurement>("late-data") {
             private static final long serialVersionUID = 33513631677208956L;
         };
 
         SingleOutputStreamOperator<WindowedMeasurements> aggregatedPerLocation = sourceStream
-                .keyBy(jsonNode -> jsonNode.get("location").asText())
+                .keyBy(SimpleMeasurement::getLocation)
                 .timeWindow(Time.of(1, TimeUnit.SECONDS))
                 .sideOutputLateData(lateDataTag)
                 .aggregate(new MeasurementWindowAggregatingFunction(), new MeasurementWindowProcessFunction())

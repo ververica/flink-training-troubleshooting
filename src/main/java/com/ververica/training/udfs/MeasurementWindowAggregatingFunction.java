@@ -4,11 +4,12 @@ import org.apache.flink.api.common.functions.AggregateFunction;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ververica.training.DoNotChangeThis;
+import com.ververica.training.entities.Measurement;
 import com.ververica.training.entities.WindowedMeasurements;
 import org.apache.commons.math3.util.CombinatoricsUtils;
 
 public class MeasurementWindowAggregatingFunction
-        implements AggregateFunction<JsonNode, WindowedMeasurements, WindowedMeasurements> {
+        implements AggregateFunction<Measurement, WindowedMeasurements, WindowedMeasurements> {
     private static final long serialVersionUID = -1083906142198231377L;
 
     public MeasurementWindowAggregatingFunction() {}
@@ -19,8 +20,8 @@ public class MeasurementWindowAggregatingFunction
     }
 
     @Override
-    public WindowedMeasurements add(final JsonNode record, final WindowedMeasurements aggregate) {
-        double result = Double.valueOf(record.get("value").asText());
+    public WindowedMeasurements add(final Measurement record, final WindowedMeasurements aggregate) {
+        double result = record.getValue();
         aggregate.setSumPerWindow(aggregate.getSumPerWindow() + result);
         aggregate.setEventsPerWindow(aggregate.getEventsPerWindow() + 1);
         return aggregate;

@@ -5,8 +5,8 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.metrics.Counter;
 import org.apache.flink.util.Collector;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.ververica.training.entities.FakeKafkaRecord;
+import com.ververica.training.entities.Measurement;
 import com.ververica.training.source.ObjectMapperSingleton;
 
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.io.IOException;
 /**
  * Deserializes the JSON Kafka message.
  */
-public class MeasurementDeserializer extends RichFlatMapFunction<FakeKafkaRecord, JsonNode> {
+public class MeasurementDeserializer extends RichFlatMapFunction<FakeKafkaRecord, Measurement> {
     private static final long serialVersionUID = 4054149949298485680L;
 
     private Counter numInvalidRecords;
@@ -27,7 +27,7 @@ public class MeasurementDeserializer extends RichFlatMapFunction<FakeKafkaRecord
     }
 
     @Override
-    public void flatMap(final FakeKafkaRecord kafkaRecord, final Collector<JsonNode> out) throws Exception {
+    public void flatMap(final FakeKafkaRecord kafkaRecord, final Collector<Measurement> out) throws Exception {
         try {
             out.collect(deserialize(kafkaRecord.getValue()));
         } catch (IOException e) {
@@ -36,8 +36,8 @@ public class MeasurementDeserializer extends RichFlatMapFunction<FakeKafkaRecord
 
     }
 
-    private JsonNode deserialize(final byte[] bytes) throws IOException {
-        return ObjectMapperSingleton.getInstance().readValue(bytes, JsonNode.class);
+    private Measurement deserialize(final byte[] bytes) throws IOException {
+        return ObjectMapperSingleton.getInstance().readValue(bytes, Measurement.class);
     }
 
 }
