@@ -72,25 +72,50 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
 
         int numberOfPartitions = assignedPartitions.size();
 
-        while (!cancelled) {
-            int nextPartition = assignedPartitions.get(rand.nextInt(numberOfPartitions));
+        if (!assignedPartitions.isEmpty()) {
+            while (!cancelled) {
+                int nextPartition = assignedPartitions.get(rand.nextInt(numberOfPartitions));
 
-            if (idlePartitions.get(nextPartition)) {
-                Thread.sleep(1000); // avoid spinning wait
-                continue;
+                if (idlePartitions.get(nextPartition)) {
+                    Thread.sleep(1000); // avoid spinning wait
+                    continue;
+                }
+
+                long nextTimestamp = getTimestampForPartition(nextPartition);
+
+                byte[] serializedMeasurement =
+                        serializedMeasurements.get(rand.nextInt(serializedMeasurements.size()));
+
+                if (rand.nextFloat() > 1 - poisonPillRate) {
+                    serializedMeasurement = Arrays.copyOf(serializedMeasurement, 10);
+                }
+
+                synchronized (sourceContext.getCheckpointLock()) {
+                    sourceContext.collect(
+                            new FakeKafkaRecord(
+                                    nextTimestamp, null, serializedMeasurement, nextPartition));
+                }
             }
+        } else {
+            // this source doesn't have any partitions and thus never emits any records
+            // (and therefore also no watermarks), so we mark this subtask as idle to
+            // not block watermark forwarding
+            sourceContext.markAsTemporarilyIdle();
 
-            long nextTimestamp = getTimestampForPartition(nextPartition);
-
-            byte[] serializedMeasurement = serializedMeasurements.get(rand.nextInt(serializedMeasurements.size()));
-
-            if (rand.nextFloat() > 1 - poisonPillRate) {
-                serializedMeasurement = Arrays.copyOf(serializedMeasurement, 10);
-            }
-
-            synchronized (sourceContext.getCheckpointLock()) {
-                sourceContext.collect(new FakeKafkaRecord(nextTimestamp, null, serializedMeasurement,
-                        nextPartition));
+            // wait until this is canceled
+            final Object waitLock = new Object();
+            while (!cancelled) {
+                try {
+                    //noinspection SynchronizationOnLocalVariableOrMethodParameter
+                    synchronized (waitLock) {
+                        waitLock.wait();
+                    }
+                } catch (InterruptedException e) {
+                    if (cancelled) {
+                        // restore the interrupted state, and fall through the loop
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
         }
     }
@@ -102,6 +127,8 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     @Override
     public void cancel() {
         cancelled = true;
+
+        // there will be an interrupt() call to the main thread anyways
     }
 
     @Override
