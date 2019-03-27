@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repository provides the basis of the hands-on part of the "Apache Flink Troubleshooting & Operations" training session at Flink Forward San Franciscos 2019.  
+This repository provides the basis of the hands-on part of the "Apache Flink Troubleshooting & Operations" training session at Flink Forward San Francisco 2019.  
 
 ### Requirements
 
@@ -25,7 +25,7 @@ mvn clean package
 
 ### Infrastructure
 
-During the training participants will be asked to run the Flink job `TroubledStreamingJob` locally as well as on Ververica Platform.
+During the training, participants will be asked to run the Flink job `TroubledStreamingJob` locally as well as on Ververica Platform.
 
 ### Running Locally
 
