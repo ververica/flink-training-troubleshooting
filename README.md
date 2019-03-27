@@ -33,10 +33,15 @@ Just run the single test `TroubledStreamingJobRunner` which will call the main-m
 
 ### The Flink Job
 
-This simple Flink job reads measurement data from a Kafka topic with eight partitions. For the purpose of this training the `KafkaConsumer` is replaced by `FakeKafkaSource`. The result of a calculation based on temperature and measurement value is averaged over 1 second. The overall flow is depicted below:
+This simple Flink job reads measurement data from a Kafka topic with eight partitions. For the purpose of this training the `KafkaConsumer` is replaced by `FakeKafkaSource`. The result of a calculation based on the measurement value is averaged over 1 second. The overall flow is depicted below:
 
-Source -> Watermarks/Timestamps -> Deserialization -> Windowed Aggregation -> Sink  
-
+```
++---------------------+       +-----------------------+       +----------------------+       +-----------------------+       +----------------------+
+|                     |       |                       |       |                      |       |                       |       |                      |
+|  Fake Kafka Source  | +---> | Watermarks/Timestamps | +---> |    Deserialization   | +---> | Windowed Aggregation  | +---> |    Discarding Sink    |
+|                     |       |                       |       |                      |       |                       |       |                      |
++---------------------+       +-----------------------+       +----------------------+       +-----------------------+       +----------------------+
+```
 ----
 
 *Apache Flink, Flink®, Apache®, the squirrel logo, and the Apache feather logo are either registered trademarks or trademarks of The Apache Software Foundation.*

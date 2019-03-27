@@ -1,6 +1,5 @@
 package com.ververica.training.source;
 
-import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
@@ -38,7 +37,6 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
     private transient          int           indexOfThisSubtask;
     private transient          int           numberOfParallelSubtasks;
     private transient          List<Integer> assignedPartitions;
-    private transient          boolean       throttled;
 
     private final List<byte[]> serializedMeasurements;
     private final double       poisonPillRate;
@@ -65,11 +63,7 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
                 .boxed()
                 .collect(Collectors.toList());
 
-        ParameterTool jobParameters =
-                (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
-        throttled = jobParameters.has("latencyUseCase");
-
-        log.info("Now reading (throttled: {}) from partitions: {}", throttled, assignedPartitions);
+        log.info("Now reading from partitions: {}", assignedPartitions);
     }
 
 
@@ -98,15 +92,11 @@ public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord>
                 sourceContext.collect(new FakeKafkaRecord(nextTimestamp, null, serializedMeasurement,
                         nextPartition));
             }
-
-            if (throttled) {
-                Thread.sleep(1);
-            }
         }
     }
 
     private long getTimestampForPartition(int partition) {
-        return System.currentTimeMillis() + (partition * 50L);
+        return System.currentTimeMillis() - (partition * 50L);
     }
 
     @Override

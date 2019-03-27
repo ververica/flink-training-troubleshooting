@@ -1,9 +1,9 @@
 package com.ververica.training.source;
 
-import com.ververica.training.DoNotChangeThis;
-import com.ververica.training.entities.Measurement;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ververica.training.DoNotChangeThis;
+import com.ververica.training.entities.Measurement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
