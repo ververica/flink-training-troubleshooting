@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ververica.training.DoNotChangeThis;
 import com.ververica.training.entities.Measurement;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ public class SourceUtils {
         List<byte[]> measurements = new ArrayList<>();
         for (int i = 0; i < NUM_OF_MEASUREMENTS; i++) {
             Measurement nextMeasurement = new Measurement(rand.nextInt(100),
-                    rand.nextDouble() * 100, locations.get(rand.nextInt(locations.size())));
+                    rand.nextDouble() * 100, locations.get(rand.nextInt(locations.size())), RandomStringUtils.randomAlphabetic(30));
             try {
                 measurements.add(mapper.writeValueAsBytes(nextMeasurement));
             } catch (JsonProcessingException e) {
