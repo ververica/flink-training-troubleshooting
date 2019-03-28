@@ -31,7 +31,7 @@ public class MeasurementWindowAggregatingFunction
 
         WindowedMeasurements aggregate = new WindowedMeasurements();
         for (JsonNode record : input) {
-            double result = calculate(Double.valueOf(record.get("value").asText()));
+            double result = Double.valueOf(record.get("value").asText());
             aggregate.setSumPerWindow(aggregate.getSumPerWindow() + result);
             aggregate.setEventsPerWindow(aggregate.getEventsPerWindow() + 1);
         }
@@ -53,18 +53,4 @@ public class MeasurementWindowAggregatingFunction
                 new DescriptiveStatisticsHistogram(EVENT_TIME_LAG_WINDOW_SIZE));
     }
 
-    // ------------------------------------------------------------------------
-
-    /**
-     * Simulates some more or less complex calculation done per element.
-     *
-     * <p>Take this calculation as a needed part of the application logic that returns some unique
-     * value for each input and cannot be cached.
-     */
-    @DoNotChangeThis
-    private double calculate(Double value) {
-        long startTime = System.nanoTime();
-        CombinatoricsUtils.factorialDouble((int) (100 * value));
-        return System.nanoTime() - startTime;
-    }
 }
