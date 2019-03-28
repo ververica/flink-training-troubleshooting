@@ -13,8 +13,7 @@ import org.apache.flink.streaming.api.functions.sink.DiscardingSink;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.FileUtils;
 import org.apache.flink.util.OutputTag;
-
-import com.ververica.training.entities.Measurement;
+import com.ververica.training.entities.SimpleMeasurement;
 import com.ververica.training.entities.WindowedMeasurements;
 import com.ververica.training.source.SourceUtils;
 import com.ververica.training.udfs.MeasurementDeserializer;
@@ -47,7 +46,7 @@ public class TroubledStreamingJob {
         env.enableCheckpointing(5000);
         env.getCheckpointConfig().setMinPauseBetweenCheckpoints(4000);
 
-        DataStream<Measurement> sourceStream = env
+        DataStream<SimpleMeasurement> sourceStream = env
                 .addSource(SourceUtils.createFakeKafkaSource())
                 .name("FakeKafkaSource")
                 .uid("FakeKafkaSource")
@@ -58,7 +57,7 @@ public class TroubledStreamingJob {
                 .name("Deserialization")
                 .uid("Deserialization");
 
-        OutputTag<Measurement> lateDataTag = new OutputTag<Measurement>("late-data") {
+        OutputTag<SimpleMeasurement> lateDataTag = new OutputTag<SimpleMeasurement>("late-data") {
             private static final long serialVersionUID = 33513631677208956L;
         };
 
