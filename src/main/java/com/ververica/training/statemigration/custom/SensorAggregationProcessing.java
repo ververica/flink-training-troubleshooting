@@ -8,6 +8,7 @@ import org.apache.flink.util.Collector;
 import com.ververica.training.entities.Measurement;
 import com.ververica.training.statemigration.MeasurementAggregationReport;
 import com.ververica.training.statemigration.StateMigrationJobBase;
+import com.ververica.training.statemigration.avro.AggregatedSensorStatistics;
 
 /**
  * Process function to report aggregated sensor statistics using a custom serializer for its state.
@@ -67,12 +68,12 @@ public class SensorAggregationProcessing
 		super.open(parameters);
 
 		final ValueStateDescriptor<AggregatedSensorStatistics> aggregationStateDesc =
-				new ValueStateDescriptor<>("aggregationStats", new AggregatedSensorStatisticsSerializerV2());
+				new ValueStateDescriptor<>("aggregationStats", AggregatedSensorStatistics.class);
 		aggregationState = getRuntimeContext().getState(aggregationStateDesc);
 	}
 
 	@Override
 	public String getStateSerializerName() {
-		return "custom v2";
+		return "avro";
 	}
 }

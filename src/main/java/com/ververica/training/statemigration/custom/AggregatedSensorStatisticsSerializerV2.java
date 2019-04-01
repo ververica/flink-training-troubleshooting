@@ -3,6 +3,7 @@ package com.ververica.training.statemigration.custom;
 import org.apache.flink.api.common.typeutils.TypeSerializerSnapshot;
 import org.apache.flink.core.memory.DataInputView;
 import org.apache.flink.core.memory.DataOutputView;
+import com.ververica.training.statemigration.avro.AggregatedSensorStatistics;
 
 import java.io.IOException;
 

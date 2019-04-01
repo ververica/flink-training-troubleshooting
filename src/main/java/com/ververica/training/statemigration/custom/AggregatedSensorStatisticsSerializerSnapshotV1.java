@@ -39,8 +39,6 @@ public final class AggregatedSensorStatisticsSerializerSnapshotV1 implements
             TypeSerializer<AggregatedSensorStatistics> newSerializer) {
         if (newSerializer instanceof AggregatedSensorStatisticsSerializerV1) {
             return TypeSerializerSchemaCompatibility.compatibleAsIs();
-        } else if (newSerializer instanceof AggregatedSensorStatisticsSerializerV2) {
-            return TypeSerializerSchemaCompatibility.compatibleAfterMigration();
         } else {
             return TypeSerializerSchemaCompatibility.incompatible();
         }
