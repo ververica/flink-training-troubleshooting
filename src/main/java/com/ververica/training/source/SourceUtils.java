@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -31,6 +32,11 @@ public class SourceUtils {
         List<byte[]> serializedMeasurements = createSerializedMeasurements();
         return new FakeKafkaSource(RANDOM_SEED, FAILURE_RATE, IDLE_PARTITIONS, serializedMeasurements);
     }
+
+	public static FakeKafkaSource createFailureFreeFakeKafkaSource() {
+		List<byte[]> serializedMeasurements = createSerializedMeasurements();
+		return new FakeKafkaSource(RANDOM_SEED, 0.0f, Collections.emptyList(), serializedMeasurements);
+	}
 
     private static List<byte[]> createSerializedMeasurements() {
         Random rand = new Random(RANDOM_SEED);
