@@ -1,5 +1,7 @@
 package com.ververica.flinktraining.exercises.troubleshoot;
 
+import org.apache.flink.api.common.restartstrategy.RestartStrategies;
+import org.apache.flink.api.common.time.Time;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.Path;
@@ -13,6 +15,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.util.concurrent.TimeUnit;
 
 public class TroubledStreamingJobUtils {
     public static StreamExecutionEnvironment createConfiguredEnvironment(
@@ -38,6 +41,10 @@ public class TroubledStreamingJobUtils {
         }
 
         env.getConfig().setGlobalJobParameters(parameters);
+        env.setRestartStrategy(RestartStrategies.fixedDelayRestart(
+                Integer.MAX_VALUE,
+                Time.of(15, TimeUnit.SECONDS) // delay
+        ));
         return env;
     }
 }
