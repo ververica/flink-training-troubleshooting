@@ -1,4 +1,4 @@
-package com.ververica.training.source;
+package com.ververica.flinktraining.exercises.troubleshoot.source;
 
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
@@ -6,8 +6,8 @@ import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
-import com.ververica.training.DoNotChangeThis;
-import com.ververica.training.entities.FakeKafkaRecord;
+import com.ververica.flinktraining.exercises.DoNotChangeThis;
+import com.ververica.flinktraining.exercises.troubleshoot.entities.FakeKafkaRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
