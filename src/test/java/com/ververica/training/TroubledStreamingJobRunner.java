@@ -1,5 +1,6 @@
 package com.ververica.training;
 
+import com.ververica.flinktraining.exercises.troubleshoot.TroubledStreamingJob;
 import org.junit.Test;
 
 public class TroubledStreamingJobRunner {

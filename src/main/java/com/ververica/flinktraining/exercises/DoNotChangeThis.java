@@ -1,4 +1,4 @@
-package com.ververica.training;
+package com.ververica.flinktraining.exercises;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

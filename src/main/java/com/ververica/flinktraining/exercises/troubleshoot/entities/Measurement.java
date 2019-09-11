@@ -1,5 +1,4 @@
-package com.ververica.training.entities;
-
+package com.ververica.flinktraining.exercises.troubleshoot.entities;
 
 import java.util.Objects;
 

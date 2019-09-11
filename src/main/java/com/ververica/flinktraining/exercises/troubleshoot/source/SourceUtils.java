@@ -1,9 +1,9 @@
-package com.ververica.training.source;
+package com.ververica.flinktraining.exercises.troubleshoot.source;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ververica.training.DoNotChangeThis;
-import com.ververica.training.entities.Measurement;
+import com.ververica.flinktraining.exercises.DoNotChangeThis;
+import com.ververica.flinktraining.exercises.troubleshoot.entities.Measurement;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +72,4 @@ public class SourceUtils {
         }
         return locations;
     }
-
-
 }
