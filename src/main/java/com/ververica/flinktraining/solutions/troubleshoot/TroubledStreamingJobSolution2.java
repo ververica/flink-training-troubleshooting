@@ -110,12 +110,14 @@ public class TroubledStreamingJobSolution2 {
 
         @Override
         public void flatMap(final FakeKafkaRecord kafkaRecord, final Collector<JsonNode> out) {
+            final JsonNode node;
             try {
-                out.collect(deserialize(kafkaRecord.getValue()));
+                node = deserialize(kafkaRecord.getValue());
             } catch (IOException e) {
                 numInvalidRecords.inc();
+                return;
             }
-
+            out.collect(node);
         }
 
         private JsonNode deserialize(final byte[] bytes) throws IOException {
@@ -132,11 +134,6 @@ public class TroubledStreamingJobSolution2 {
 
         private final long maxOutOfOrderness;
         private final long idleTimeout;
-
-
-        MeasurementTSExtractor() {
-            this(Time.of(250, TimeUnit.MILLISECONDS), Time.of(1, TimeUnit.SECONDS));
-        }
 
         MeasurementTSExtractor(Time maxOutOfOrderness, Time idleTimeout) {
             if (maxOutOfOrderness.toMilliseconds() < 0) {
