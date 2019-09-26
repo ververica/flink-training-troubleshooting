@@ -93,7 +93,7 @@ public class TroubledStreamingJobSolution32 {
                     .disableChaining();
         }
 
-        env.execute();
+        env.execute(TroubledStreamingJobSolution32.class.getSimpleName());
     }
 
     /**

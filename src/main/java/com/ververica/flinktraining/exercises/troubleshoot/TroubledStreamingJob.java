@@ -87,7 +87,7 @@ public class TroubledStreamingJob {
                     .disableChaining();
         }
 
-        env.execute();
+        env.execute(TroubledStreamingJob.class.getSimpleName());
     }
 
     /**
