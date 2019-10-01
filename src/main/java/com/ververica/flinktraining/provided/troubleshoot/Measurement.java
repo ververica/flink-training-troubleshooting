@@ -1,20 +1,33 @@
-package com.ververica.flinktraining.exercises.troubleshoot.entities;
+package com.ververica.flinktraining.provided.troubleshoot;
+
+import com.ververica.flinktraining.provided.DoNotChangeThis;
 
 import java.util.Objects;
 
-public class SimpleMeasurement {
+@DoNotChangeThis
+public class Measurement {
 
     private int    sensorId;
     private double value;
     private String location;
+    private String measurementInformation;
 
-    public SimpleMeasurement() {
+    public Measurement() {
     }
 
-    public SimpleMeasurement(final int sensorId, final double value, final String location, final String measurementInformation) {
+    public Measurement(final int sensorId, final double value, final String location, final String measurementInformation) {
         this.sensorId = sensorId;
         this.value = value;
         this.location = location;
+        this.measurementInformation = measurementInformation;
+    }
+
+    public String getMeasurementInformation() {
+        return measurementInformation;
+    }
+
+    public void setMeasurementInformation(final String measurementInformation) {
+        this.measurementInformation = measurementInformation;
     }
 
     public int getSensorId() {
@@ -49,16 +62,16 @@ public class SimpleMeasurement {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final SimpleMeasurement
-                that = (SimpleMeasurement) o;
+        final Measurement that = (Measurement) o;
         return sensorId == that.sensorId &&
                Double.compare(that.value, value) == 0 &&
-               Objects.equals(location, that.location);
+               Objects.equals(location, that.location) &&
+               Objects.equals(measurementInformation, that.measurementInformation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sensorId, value, location);
+        return Objects.hash(sensorId, value, location, measurementInformation);
     }
 
     @Override
@@ -67,6 +80,7 @@ public class SimpleMeasurement {
         sb.append("sensorId=").append(sensorId);
         sb.append(", value=").append(value);
         sb.append(", location='").append(location).append('\'');
+        sb.append(", measurementInformation='").append(measurementInformation).append('\'');
         sb.append('}');
         return sb.toString();
     }

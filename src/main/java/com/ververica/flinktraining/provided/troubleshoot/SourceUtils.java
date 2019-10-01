@@ -1,9 +1,8 @@
-package com.ververica.flinktraining.exercises.troubleshoot.source;
+package com.ververica.flinktraining.provided.troubleshoot;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ververica.flinktraining.exercises.DoNotChangeThis;
-import com.ververica.flinktraining.exercises.troubleshoot.entities.Measurement;
+import com.ververica.flinktraining.provided.DoNotChangeThis;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +13,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 

@@ -1,7 +1,10 @@
-package com.ververica.flinktraining.exercises.troubleshoot.entities;
+package com.ververica.flinktraining.provided.troubleshoot;
+
+import com.ververica.flinktraining.provided.DoNotChangeThis;
 
 import java.util.Objects;
 
+@DoNotChangeThis
 public class WindowedMeasurements {
 
     private long   windowStart;
