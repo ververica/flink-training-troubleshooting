@@ -19,12 +19,12 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ververica.flinktraining.exercises.troubleshoot.entities.FakeKafkaRecord;
-import com.ververica.flinktraining.exercises.troubleshoot.entities.Measurement;
-import com.ververica.flinktraining.exercises.troubleshoot.entities.WindowedMeasurements;
-import com.ververica.flinktraining.exercises.troubleshoot.source.ObjectMapperSingleton;
-import com.ververica.flinktraining.exercises.troubleshoot.source.SourceUtils;
+import com.ververica.flinktraining.provided.troubleshoot.FakeKafkaRecord;
+import com.ververica.flinktraining.provided.troubleshoot.Measurement;
+import com.ververica.flinktraining.provided.troubleshoot.WindowedMeasurements;
+import com.ververica.flinktraining.provided.troubleshoot.SourceUtils;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -111,7 +111,7 @@ public class TroubledStreamingJobSolution42 {
         public void open(final Configuration parameters) throws Exception {
             super.open(parameters);
             numInvalidRecords = getRuntimeContext().getMetricGroup().counter("numInvalidRecords");
-            instance = ObjectMapperSingleton.getInstance();
+            instance = createObjectMapper();
         }
 
         @Override
@@ -141,11 +141,7 @@ public class TroubledStreamingJobSolution42 {
         private final long maxOutOfOrderness;
         private final long idleTimeout;
 
-        public MeasurementTSExtractor() {
-            this(Time.of(250, TimeUnit.MILLISECONDS), Time.of(1, TimeUnit.SECONDS));
-        }
-
-        public MeasurementTSExtractor(Time maxOutOfOrderness, Time idleTimeout) {
+        MeasurementTSExtractor(Time maxOutOfOrderness, Time idleTimeout) {
             if (maxOutOfOrderness.toMilliseconds() < 0) {
                 throw new RuntimeException("Tried to set the maximum allowed " +
                         "lateness to " + maxOutOfOrderness +
@@ -235,7 +231,7 @@ public class TroubledStreamingJobSolution42 {
 
         private transient DescriptiveStatisticsHistogram eventTimeLag;
 
-        public MeasurementWindowProcessFunction() {
+        MeasurementWindowProcessFunction() {
         }
 
         @Override
@@ -264,5 +260,11 @@ public class TroubledStreamingJobSolution42 {
             eventTimeLag = getRuntimeContext().getMetricGroup().histogram("eventTimeLag",
                     new DescriptiveStatisticsHistogram(EVENT_TIME_LAG_WINDOW_SIZE));
         }
+    }
+
+    private static ObjectMapper createObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return objectMapper;
     }
 }

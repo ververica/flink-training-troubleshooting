@@ -16,11 +16,12 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.ververica.flinktraining.exercises.troubleshoot.entities.FakeKafkaRecord;
-import com.ververica.flinktraining.exercises.troubleshoot.entities.WindowedMeasurements;
-import com.ververica.flinktraining.exercises.troubleshoot.source.ObjectMapperSingleton;
-import com.ververica.flinktraining.exercises.troubleshoot.source.SourceUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ververica.flinktraining.provided.troubleshoot.FakeKafkaRecord;
+import com.ververica.flinktraining.provided.troubleshoot.WindowedMeasurements;
+import com.ververica.flinktraining.provided.troubleshoot.SourceUtils;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -160,6 +161,14 @@ public class TroubledStreamingJob {
 
             eventTimeLag = getRuntimeContext().getMetricGroup().histogram("eventTimeLag",
                     new DescriptiveStatisticsHistogram(EVENT_TIME_LAG_WINDOW_SIZE));
+        }
+    }
+
+    private static class ObjectMapperSingleton {
+        static ObjectMapper getInstance() {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            return objectMapper;
         }
     }
 }
