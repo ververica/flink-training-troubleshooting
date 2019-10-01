@@ -33,11 +33,6 @@ public class SourceUtils {
         return new FakeKafkaSource(RANDOM_SEED, FAILURE_RATE, IDLE_PARTITIONS, serializedMeasurements);
     }
 
-	public static FakeKafkaSource createFailureFreeFakeKafkaSource() {
-		List<byte[]> serializedMeasurements = createSerializedMeasurements();
-		return new FakeKafkaSource(RANDOM_SEED, 0.0f, Collections.emptyList(), serializedMeasurements);
-	}
-
     private static List<byte[]> createSerializedMeasurements() {
         Random rand = new Random(RANDOM_SEED);
         ObjectMapper mapper = new ObjectMapper();
