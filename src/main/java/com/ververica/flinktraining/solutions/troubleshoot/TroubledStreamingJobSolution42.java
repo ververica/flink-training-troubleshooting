@@ -63,7 +63,7 @@ public class TroubledStreamingJobSolution42 {
                 .uid("Deserialization");
 
         OutputTag<Measurement> lateDataTag = new OutputTag<Measurement>("late-data") {
-            private static final long serialVersionUID = 33513631677208956L;
+            private static final long serialVersionUID = 1L;
         };
 
         SingleOutputStreamOperator<WindowedMeasurements> aggregatedPerLocation = sourceStream
@@ -193,7 +193,7 @@ public class TroubledStreamingJobSolution42 {
 
     public static class MeasurementWindowAggregatingFunction
             implements AggregateFunction<Measurement, WindowedMeasurements, WindowedMeasurements> {
-        private static final long serialVersionUID = -1083906142198231377L;
+        private static final long serialVersionUID = 3L;
 
         public MeasurementWindowAggregatingFunction() {}
 
