@@ -63,7 +63,7 @@ public class TroubledStreamingJobSolution41a {
                 .uid("Deserialization");
 
         OutputTag<JsonNode> lateDataTag = new OutputTag<JsonNode>("late-data") {
-            private static final long serialVersionUID = 33513631677208956L;
+            private static final long serialVersionUID = 1L;
         };
 
         SingleOutputStreamOperator<WindowedMeasurements> aggregatedPerLocation = sourceStream

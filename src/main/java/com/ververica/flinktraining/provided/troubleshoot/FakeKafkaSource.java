@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
  */
 @DoNotChangeThis
 public class FakeKafkaSource extends RichParallelSourceFunction<FakeKafkaRecord> implements CheckpointedFunction {
-    private static final long serialVersionUID = 4658785571367840693L;
+    private static final long serialVersionUID = 1L;
 
     private static final int    NO_OF_PARTIONS = 8;
     public static final  Logger log            = LoggerFactory.getLogger(FakeKafkaSource.class);

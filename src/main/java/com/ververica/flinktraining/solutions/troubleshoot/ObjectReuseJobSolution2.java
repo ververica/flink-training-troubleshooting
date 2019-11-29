@@ -54,11 +54,11 @@ public class ObjectReuseJobSolution2 {
 
         final OutputTag<ExtendedMeasurement> temperatureTag =
                 new OutputTag<ExtendedMeasurement>("temperature") {
-                    private static final long serialVersionUID = -3127503822430851744L;
+                    private static final long serialVersionUID = 1L;
                 };
         final OutputTag<ExtendedMeasurement> windTag =
                 new OutputTag<ExtendedMeasurement>("wind") {
-                    private static final long serialVersionUID = 4249595595891069268L;
+                    private static final long serialVersionUID = 1L;
                 };
 
         SingleOutputStreamOperator<ExtendedMeasurement> splitStream = env
