@@ -36,7 +36,7 @@ under the License.
         <flink.version>1.9.0</flink.version>
         <jackson.version>2.9.10</jackson.version>
         <scala.binary.version>2.11</scala.binary.version>
-        <log4j.version>2.10.0</log4j.version>
+        <log4j.version>2.13.3</log4j.version>
     </properties>
 
     <dependencies>
