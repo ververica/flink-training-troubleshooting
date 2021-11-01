@@ -1,3 +1,8 @@
+
+**⚠️ This repository was archived and it's content was moved to https://github.com/ververica/flink-training/ ⚠️**
+
+---
+
 # Apache Flink® Troubleshooting Training
 
 ## Introduction
